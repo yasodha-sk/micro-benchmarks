@@ -10,7 +10,7 @@ using namespace std;
 
 int main()
 {
-    int N = 1024*1024*512;
+    int N = 1024*1024*1024;
     double out_vec=0, out_vec_a=0;
     struct timespec start, finish;
     char *str_log=(char *) malloc(500*sizeof(char));
@@ -78,7 +78,7 @@ int main()
     sprintf(str_log, "Vector init numa alloc time");
     print_time(str_log, start, finish);
 
-
+    /*
     for(int i = 0; i < N; ++i) {
     	out_vec += vec[i];    
     }
@@ -87,7 +87,8 @@ int main()
     }
     cout << " out_vec " << out_vec << endl;
     cout << " out_vec_a " << out_vec_a << endl;
-    
+    */
+
     double out_vec_omp=0, out_vec_a_omp=0, out_vec_n_a_omp=0;
 
     clock_gettime(CLOCK_REALTIME, &start);
