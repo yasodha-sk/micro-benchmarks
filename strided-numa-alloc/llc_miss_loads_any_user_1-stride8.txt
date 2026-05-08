@@ -1,0 +1,57 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 11K of event 'mem_inst_retired.all_loads:u'
+# Event count (approx.): 11483034449
+#
+# Overhead  Command  Shared Object                                                      Symbol                                                  
+# ........  .......  .................................................................  ........................................................
+#
+    56.11%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1494             B [.] sum_arr1_index_arr2.constprop.0
+    29.22%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x172e             B [.] sum_two_arr_index_strided
+    14.61%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1650             B [.] sum_arr_index_strided
+     0.04%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x154e             B [.] init_elem
+     0.02%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x157d             B [.] init_indices
+
+
+# Samples: 15K of event 'mem_inst_retired.any:u'
+# Event count (approx.): 15241045723
+#
+# Overhead  Command  Shared Object                                                      Symbol                                                  
+# ........  .......  .................................................................  ........................................................
+#
+    42.27%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1494             B [.] sum_arr1_index_arr2.constprop.0
+    22.01%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1726             B [.] sum_two_arr_index_strided
+    17.56%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1549             B [.] init_elem
+    11.01%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1650             B [.] sum_arr_index_strided
+     7.05%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1579             B [.] init_indices
+     0.10%  arr_op   [unknown]                                                          0xffffffff9bc00ba0 ! [k] 0xffffffff9bc00ba0
+     0.01%  arr_op   [unknown]                                                          0xffffffff9bc00f30 ! [k] 0xffffffff9bc00f30
+
+
+# Samples: 13K of event 'LLC-load-misses'
+# Event count (approx.): 922809665
+#
+# Overhead  Command  Shared Object                                                      Symbol                                                  
+# ........  .......  .................................................................  ........................................................
+#
+    98.76%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1494             B [.] sum_arr1_index_arr2.constprop.0
+     1.07%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1726             B [.] sum_two_arr_index_strided
+     0.09%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1658             B [.] sum_arr_index_strided
+     0.08%  arr_op   [unknown]                                                          0xffffffff9bc00f30 ! [k] 0xffffffff9bc00f30
+     0.00%  arr_op   [unknown]                                                          0xffffffff9bc00ba0 ! [k] 0xffffffff9bc00ba0
+     0.00%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x1579             B [.] init_indices
+     0.00%  arr_op   /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op  0x154e             B [.] init_elem
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/libc.so.6                                0xad65b            B [.] malloc
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/libc.so.6                                0xec962            B [.] clock_gettime
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/libc.so.6                                0xab71c            B [.] 0x00000000000ab71c
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/libc.so.6                                0xace00            B [.] 0x00000000000ace00
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2                     0x15f75            B [.] 0x0000000000015f75
+     0.00%  arr_op   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2                     0x215be            B [.] 0x00000000000215be
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

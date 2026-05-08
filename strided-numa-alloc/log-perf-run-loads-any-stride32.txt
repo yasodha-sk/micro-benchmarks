@@ -1,0 +1,70 @@
+++ repeatCnt=5
+++ set -x
++++ date +%d-%m
+++ cur_date=10-04
+++ threads=32
++++ seq 1 5
+++ for i in $(seq 1 $repeatCnt)
+++ perf record -o perf_k_0.perf -e mem_inst_retired.all_loads:u -e mem_inst_retired.any:u -e LLC-load-misses:u ./arr_op
+Lowering default frequency rate from 4000 to 1000.
+Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+Small 720575937806770176.000000 Large 257904140623798334297997312.000000 Large1 515808281247596668595994624.000000 Small1 720575937806770176.000000  Array Run time 14.259053564
+[ perf record: Woken up 7 times to write data ]
+[ perf record: Captured and wrote 1.653 MB perf_k_0.perf (39311 samples) ]
+++ perf report -i perf_k_0.perf -v
+build id event received for [kernel.kallsyms]: 5e5f2968a7b14c5d4f2bd9198acc14479c284559 [20]
+build id event received for /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op: 4dc9e8b3b908ff36976f2d11ac765a48e68a32a2 [20]
+build id event received for [vdso]: 8b94d3a4fa1c62fc6b18840fc657d1d5f2ca0bb9 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/libc.so.6: 6d64b17fbac799e68da7ebd9985ddf9b5cb375e6 [20]
+++ for i in $(seq 1 $repeatCnt)
+++ perf record -o perf_k_0.perf -e mem_inst_retired.all_loads:u -e mem_inst_retired.any:u -e LLC-load-misses:u ./arr_op
+Lowering default frequency rate from 4000 to 1000.
+Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+Small 720575937806770176.000000 Large 257904140623798334297997312.000000 Large1 515808281247596668595994624.000000 Small1 720575937806770176.000000  Array Run time 14.199599474
+[ perf record: Woken up 7 times to write data ]
+[ perf record: Captured and wrote 1.655 MB perf_k_0.perf (39226 samples) ]
+++ perf report -i perf_k_0.perf -v
+build id event received for [kernel.kallsyms]: 5e5f2968a7b14c5d4f2bd9198acc14479c284559 [20]
+build id event received for /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op: 4dc9e8b3b908ff36976f2d11ac765a48e68a32a2 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: 353e1b6cb0eebc08cf3ff812eae8a51b4efd684e [20]
+build id event received for [vdso]: 8b94d3a4fa1c62fc6b18840fc657d1d5f2ca0bb9 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/libc.so.6: 6d64b17fbac799e68da7ebd9985ddf9b5cb375e6 [20]
+++ for i in $(seq 1 $repeatCnt)
+++ perf record -o perf_k_0.perf -e mem_inst_retired.all_loads:u -e mem_inst_retired.any:u -e LLC-load-misses:u ./arr_op
+Lowering default frequency rate from 4000 to 1000.
+Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+Small 720575937806770176.000000 Large 257904140623798334297997312.000000 Large1 515808281247596668595994624.000000 Small1 720575937806770176.000000  Array Run time 14.382598499
+[ perf record: Woken up 7 times to write data ]
+[ perf record: Captured and wrote 1.669 MB perf_k_0.perf (39424 samples) ]
+++ perf report -i perf_k_0.perf -v
+build id event received for [kernel.kallsyms]: 5e5f2968a7b14c5d4f2bd9198acc14479c284559 [20]
+build id event received for /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op: 4dc9e8b3b908ff36976f2d11ac765a48e68a32a2 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: 353e1b6cb0eebc08cf3ff812eae8a51b4efd684e [20]
+build id event received for [vdso]: 8b94d3a4fa1c62fc6b18840fc657d1d5f2ca0bb9 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/libc.so.6: 6d64b17fbac799e68da7ebd9985ddf9b5cb375e6 [20]
+++ for i in $(seq 1 $repeatCnt)
+++ perf record -o perf_k_0.perf -e mem_inst_retired.all_loads:u -e mem_inst_retired.any:u -e LLC-load-misses:u ./arr_op
+Lowering default frequency rate from 4000 to 1000.
+Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+Small 720575937806770176.000000 Large 257904140623798334297997312.000000 Large1 515808281247596668595994624.000000 Small1 720575937806770176.000000  Array Run time 14.185033880
+[ perf record: Woken up 7 times to write data ]
+[ perf record: Captured and wrote 1.655 MB perf_k_0.perf (39280 samples) ]
+++ perf report -i perf_k_0.perf -v
+build id event received for [kernel.kallsyms]: 5e5f2968a7b14c5d4f2bd9198acc14479c284559 [20]
+build id event received for /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op: 4dc9e8b3b908ff36976f2d11ac765a48e68a32a2 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: 353e1b6cb0eebc08cf3ff812eae8a51b4efd684e [20]
+build id event received for [vdso]: 8b94d3a4fa1c62fc6b18840fc657d1d5f2ca0bb9 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/libc.so.6: 6d64b17fbac799e68da7ebd9985ddf9b5cb375e6 [20]
+++ for i in $(seq 1 $repeatCnt)
+++ perf record -o perf_k_0.perf -e mem_inst_retired.all_loads:u -e mem_inst_retired.any:u -e LLC-load-misses:u ./arr_op
+Lowering default frequency rate from 4000 to 1000.
+Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+Small 720575937806770176.000000 Large 257904140623798334297997312.000000 Large1 515808281247596668595994624.000000 Small1 720575937806770176.000000  Array Run time 14.200754980
+[ perf record: Woken up 7 times to write data ]
+[ perf record: Captured and wrote 1.657 MB perf_k_0.perf (39272 samples) ]
+++ perf report -i perf_k_0.perf -v
+build id event received for [kernel.kallsyms]: 5e5f2968a7b14c5d4f2bd9198acc14479c284559 [20]
+build id event received for /home/devcloud/Projects/Benchmarks/affinity_ubench/strided/arr_op: 4dc9e8b3b908ff36976f2d11ac765a48e68a32a2 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: 353e1b6cb0eebc08cf3ff812eae8a51b4efd684e [20]
+build id event received for [vdso]: 8b94d3a4fa1c62fc6b18840fc657d1d5f2ca0bb9 [20]
+build id event received for /usr/lib/x86_64-linux-gnu/libc.so.6: 6d64b17fbac799e68da7ebd9985ddf9b5cb375e6 [20]
