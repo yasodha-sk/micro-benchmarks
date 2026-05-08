@@ -26,7 +26,7 @@ class Mallocator
         
         if (auto p = static_cast<T*>(std::malloc(n * sizeof(T))))
         {
-            report(p, n);
+            //report(p, n);
             return p;
         }
         

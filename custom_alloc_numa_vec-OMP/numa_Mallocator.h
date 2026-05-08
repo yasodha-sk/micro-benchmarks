@@ -26,9 +26,9 @@ class numa_Mallocator
         if (n > std::numeric_limits<std::size_t>::max() / sizeof(T))
             throw std::bad_array_new_length();
         
-        if (auto p = static_cast<T*>(numa_alloc_onnode(n * sizeof(T),0)))
+        if (auto p = static_cast<T*>(numa_alloc_onnode(n * sizeof(T),1)))
         {
-            report(p, n);
+            //report(p, n);
             return p;
         }
         
