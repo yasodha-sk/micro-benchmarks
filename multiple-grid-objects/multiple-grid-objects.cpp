@@ -23,36 +23,42 @@ void  __attribute__ ((noinline)) init_elem ( TYPE *ar1, uint64_t arCnt, TYPE inV
 	 }
 }
 
-void init_indices_Reg_Rand ( uint64_t *ar1, uint64_t arCnt, uint64_t numLayers) {
+void init_indices_Reg_Rand ( uint64_t  *ar1, uint64_t arCnt, uint64_t numLayers) {
 srand(time(NULL));
-//#pragma omp parallel
-//{
+#pragma omp parallel
+{
 	std::random_device rd;  // a seed source for the random number engine
     	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
     	std::uniform_int_distribution<> distrib(1, (numLayers));
-	/*
-	int thread_id = omp_get_thread_num();
-	int total_threads = omp_get_num_threads();
+	uint64_t thread_id = omp_get_thread_num();
+	uint64_t total_threads = omp_get_num_threads();
+ printf("Hello World from thread %lu out of %lu\n", thread_id, total_threads);
 	 // Calculate a workload range for this specific thread
-	int chunk_size = arCnt / total_threads;
-	int start_idx = thread_id * chunk_size;
-	int end_idx = (thread_id == total_threads - 1) ? arCnt : start_idx + chunk_size;
+	uint64_t chunk_size = arCnt / total_threads;
+	uint64_t start_idx = thread_id * chunk_size;
+	uint64_t end_idx = (thread_id == total_threads - 1) ? arCnt : start_idx + chunk_size;
+	
+	uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
+	uint64_t idx_start_idx = (thread_id-1) * idx_chunk_size;
+ printf("Hello World from thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), idx_chunk_size, idx_start_idx);
 
          // Process only this thread's portion
-	 uint64_t seedIndex = 0;
-         for (int i = start_idx; i < end_idx; i++) {
-                 ar1[i] = i + seedIndex;
+	 ar1[start_idx] = idx_start_idx;  
+         for (uint64_t i = start_idx+1; i < end_idx; i++) {
+                 ar1[i] = ar1[i-1]+ distrib(gen);
          }
-	 */
-	*(ar1)=0;
+
+}
+/* Sequential version
+	 *(ar1)=0;
          for (uint64_t i = 1; i < arCnt; i++) {
 	 	*(ar1+i) =  *(ar1+i-1) + distrib(gen);
          }
+*/
 	
 	for(uint64_t i=0; i<arCnt; i++) 
 	printf("Reg Rand Indices %lu  size %lu \n", *(ar1+i), arCnt*numLayers);
 
-//}
 }
 
 void  __attribute__ ((noinline)) init_indices_Random ( uint64_t *ar1, uint64_t arCnt){
