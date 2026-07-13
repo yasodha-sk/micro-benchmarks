@@ -39,13 +39,14 @@ srand(time(NULL));
 	uint64_t end_idx = (thread_id == total_threads - 1) ? arCnt : start_idx + chunk_size;
 	
 	uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
-	uint64_t idx_start_idx = (thread_id-1) * idx_chunk_size;
+	uint64_t idx_start_idx = (thread_id) * idx_chunk_size;
  printf("Hello World from thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), idx_chunk_size, idx_start_idx);
 
          // Process only this thread's portion
 	 ar1[start_idx] = idx_start_idx;  
          for (uint64_t i = start_idx+1; i < end_idx; i++) {
-                 ar1[i] = ar1[i-1]+ distrib(gen);
+		 uint64_t randValue = distrib(gen); 
+                 ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
          }
 
 }
@@ -110,7 +111,7 @@ int main(void) {
 	char *str_log=(char *) malloc(500*sizeof(char)); 
   	//uint64_t numLat = 512*512;
   	//uint64_t numLon = 256*256;
-  	uint64_t numLat = 5*5;
+  	uint64_t numLat = 4*5;
   	uint64_t numLon = 2*5;
 	uint64_t numVegBands = 4;
 	uint64_t numRootLayers = 4;
