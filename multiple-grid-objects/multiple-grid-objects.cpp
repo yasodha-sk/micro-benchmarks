@@ -120,7 +120,7 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg+i+j)) * (0.5) / cntSoil;	
 			}
 		}
 		for (vegIndex=*(veg_Reg_Rand_Index+i); vegIndex < (*(veg_Reg_Rand_Index+i+1)); vegIndex++) 
@@ -148,7 +148,7 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg+i+j)) * (0.5) / cntSoil;	
 			}
 		}
 		for (rootIndex=*(root_Reg_Rand_Index+i); rootIndex < (*(root_Reg_Rand_Index+i+1)); rootIndex++) 
@@ -197,17 +197,14 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 	TYPE outAtmos =0;
   #pragma omp parallel for private(i, j, k, outSoil, outAtmos)
   for(i=0; i<numElements; i++) {
-		printf(" in funAtmosCalc i %lu \n", i);
 		outSoil =0;
 		outAtmos=0;
 		for (j=0; j<numSoilLayers; j++) {
 				outSoil += (*(soil_Reg+i+j)) * (0.5); 
 		}
-		printf(" in funAtmosCalc iafter Soil \n");
-		for (k=0; j<numAtmosValues; k++) {
+		for (k=0; k<numAtmosValues; k++) {
 				outAtmos += (*(atmos_Reg+i+k)) * (0.5); 
 		}
-		printf(" in funAtmosCalc iafter Atmos \n");
 
 		*(out_AtmosEffect+i) = 	outSoil * outAtmos ;
 	}
@@ -221,8 +218,8 @@ int main(void) {
 	char *str_log=(char *) malloc(500*sizeof(char)); 
   	//uint64_t numLat = 512*512;
   	//uint64_t numLon = 256*256;
-  	uint64_t numLat = 4*5;
-  	uint64_t numLon = 2*5;
+  	uint64_t numLat = 40*500;
+  	uint64_t numLon = 20*500;
 	uint64_t numVegBands = 4;
 	uint64_t numRootLayers = 4;
 	uint64_t numSoilLayers = 5;
@@ -288,16 +285,15 @@ int main(void) {
 	TYPE *out_Moisture = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	sprintf(str_log, "Run time");  
 	clock_gettime(CLOCK_REALTIME, &start); 
+
+	for ( int loopCnt=0; loopCnt <5; loopCnt++) {
 	funSMCalc( out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
 	funPrecCalc( out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, frac_Prec_Rand, ar_Prec_Index);  
 	funEvapCalc( out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg, numSoilLayers, frac_Evap_Rand, ar_Evap_Index);  
 	funAtmosCalc( out_AtmosEffect, (numLat*numLon),  soil_Reg, numSoilLayers, atmos_Reg, numAtmosValues);  
-
+	}
 
 	clock_gettime(CLOCK_REALTIME, &finish); 
-
-	//printf("Array values %lf %lf \n", *(ar_Out_Sm1+1), *(ar_Out_Sm1+20));
-                                       
 	print_time(str_log, start, finish);
 	uint64_t i=0;
 	#pragma omp parallel for private (i) 
