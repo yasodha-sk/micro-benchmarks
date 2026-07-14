@@ -32,7 +32,7 @@ srand(time(NULL));
     	std::uniform_int_distribution<> distrib(1, (numLayers));
 	uint64_t thread_id = omp_get_thread_num();
 	uint64_t total_threads = omp_get_num_threads();
- printf("Hello World from thread %lu out of %lu\n", thread_id, total_threads);
+ //printf("Hello World from thread %lu out of %lu\n", thread_id, total_threads);
 	 // Calculate a workload range for this specific thread
 	uint64_t chunk_size = arCnt / total_threads;
 	uint64_t start_idx = thread_id * chunk_size;
@@ -40,7 +40,7 @@ srand(time(NULL));
 	
 	uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
 	uint64_t idx_start_idx = (thread_id) * idx_chunk_size;
- printf("Hello World from thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), idx_chunk_size, idx_start_idx);
+ //printf("Hello World from thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), idx_chunk_size, idx_start_idx);
 
          // Process only this thread's portion
 	 ar1[start_idx] = idx_start_idx;  
@@ -57,8 +57,8 @@ srand(time(NULL));
          }
 */
 	
-	for(uint64_t i=0; i<arCnt; i++) 
-	printf("Reg Rand Indices %lu  size %lu \n", *(ar1+i), arCnt*numLayers);
+	//for(uint64_t i=0; i<arCnt; i++) 
+	//printf("Reg Rand Indices %lu  size %lu \n", *(ar1+i), arCnt*numLayers);
 
 }
 
@@ -103,6 +103,24 @@ TYPE __attribute__ ((noinline)) sum_three_arr(TYPE *arB, TYPE *arA, TYPE *arC,
     return check_sum;
 }
 
+void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElements, TYPE *root_Reg_Rand, uint64_t *root_Reg_Rand_Index, 
+				TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *veg_Reg_Rand, uint64_t *veg_Reg_Rand_Index, 
+				TYPE *frac_SurfMoist_Rand, uint64_t *ar_SurfMoist_Index)
+{
+  uint64_t i=0, j=0, arACIndex, arACIndexNext;
+  uint64_t arBIndex=0;
+  #pragma omp parallel for reduction(+:check_sum) private(i, j, arBIndex, arACIndex, arACIndexNext) 
+}	
+void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElements, TYPE *root_Reg_Rand, uint64_t *root_Reg_Rand_Index, TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *frac_Prec_Rand, uint64_t *ar_Prec_Index)  
+{
+}
+
+void __attribute__ ((noinline))	funEvapCalc(TYPE *out_EvapOut, uint64_t numElements, TYPE *canopy_Reg_Rand, uint64_t *canopy_Reg_Rand_Index, TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *frac_Evap_Rand, uint64_t *ar_Evap_Index)
+{
+}	
+void __attribute__ ((noinline))	funEvapCalc(TYPE *out_AtmosEffect, uint64_t numElements,  TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *atmos_Reg, uint64_t numAtmosValues)
+{
+}	
 
 
 
@@ -156,6 +174,9 @@ int main(void) {
 	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
 	init_elem(frac_Evap_Rand, numLat*numLon, 0.335);
 	
+	srand(time(NULL)); 
+	clock_gettime(CLOCK_REALTIME, &start); 
+	
 	init_indices_Random(ar_SurfMoist_Index, numLat*numLon);
 	init_indices_Random(ar_Prec_Index, numLat*numLon);
 	init_indices_Random(ar_Evap_Index, numLat*numLon);
@@ -163,25 +184,34 @@ int main(void) {
 	init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
 	init_indices_Reg_Rand(root_Reg_Rand_Index,  ( numLat*numLon), numRootLayers); 
 	init_indices_Reg_Rand(canopy_Reg_Rand_Index,  ( numLat*numLon), numCanopyLayers);
-
-
-	srand(time(NULL)); 
-	clock_gettime(CLOCK_REALTIME, &start); 
 	
 	clock_gettime(CLOCK_REALTIME, &finish); 
-	sprintf(str_log, "Array init indices time");  
+	sprintf(str_log, "init indices time");  
 	print_time(str_log, start, finish);
 
-	TYPE resSmall=0;
-	TYPE resLarge=0;
-	TYPE resLarge1=0;
-	TYPE resSmall1=0;
-	sprintf(str_log, "Array Run time");  
+	TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_PrecLeft = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_EvapOut = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_AtmosEffect = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_Moisture = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	sprintf(str_log, "Run time");  
 	clock_gettime(CLOCK_REALTIME, &start); 
+	funSMCalc( out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
+	funPrecCalc( out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, frac_Prec_Rand, ar_Prec_Index);  
+	funEvapCalc( out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg, numSoilLayers, frac_Evap_Rand, ar_Evap_Index);  
+	funEvapCalc( out_AtmosEffect, (numLat*numLon),  soil_Reg, numSoilLayers, atmos_Reg, numAtmosValues);  
+
 
 	clock_gettime(CLOCK_REALTIME, &finish); 
+
 	//printf("Array values %lf %lf \n", *(ar_Out_Sm1+1), *(ar_Out_Sm1+20));
                                        
 	print_time(str_log, start, finish);
+
+	#pragma omp parallel for 
+	for(uint64_t i=0; i<( numLat*numLon); i++) {
+		out_Moisture[i] = out_SurfMoist[i]+ out_PrecLeft[i] - out_EvapOut[i] - out_AtmosEffect[i];
+	}
+	        printf("out moisture 0 %f last %f \n", *out_Moisture, *(out_Moisture+(numLat*numLon)-1));
   return 0;
 }
