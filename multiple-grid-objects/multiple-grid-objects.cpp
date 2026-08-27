@@ -1,4 +1,6 @@
-
+// Multiple access patterns 
+// Regular random - accesses to random number of adjacent element
+// Random - random elements within the whole array
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
