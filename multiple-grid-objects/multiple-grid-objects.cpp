@@ -24,32 +24,37 @@ void  __attribute__ ((noinline)) init_elem ( TYPE *ar1, uint64_t arCnt, TYPE inV
 }
 
 void init_indices_Reg_Rand ( uint64_t  *ar1, uint64_t arCnt, uint64_t numLayers) {
-srand(time(NULL));
-#pragma omp parallel
-{
-	std::random_device rd;  // a seed source for the random number engine
- 	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
- 	std::uniform_int_distribution<> distrib(1, (numLayers));
-	uint64_t thread_id = omp_get_thread_num();
-	uint64_t total_threads = omp_get_num_threads();
-  //printf("Hello World from thread %lu out of %lu\n", thread_id, total_threads);
-  // Calculate a workload range for this specific thread
-	uint64_t chunk_size = arCnt / total_threads;
-	uint64_t start_idx = thread_id * chunk_size;
-	uint64_t end_idx = (thread_id == total_threads - 1) ? arCnt : start_idx + chunk_size;
+  #pragma omp parallel
+  {
+    uint64_t thread_id = omp_get_thread_num();
+	  uint64_t total_threads = omp_get_num_threads();
+	  //std::random_device rd;  // a seed source for the random number engine
+ 	  //std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+    std::mt19937 gen(1337 + thread_id);
+ 	  std::uniform_int_distribution<> distrib(1, (numLayers));
+
+    //printf("Hello World from thread %lu out of %lu\n", thread_id, total_threads);
+    // Calculate a workload range for this specific thread
+	  uint64_t chunk_size = arCnt / total_threads;
+	  uint64_t start_idx = thread_id * chunk_size;
+	  uint64_t end_idx = (thread_id == total_threads - 1) ? arCnt : start_idx + chunk_size;
 	
-	uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
-	uint64_t idx_start_idx = (thread_id) * idx_chunk_size;
- //printf("Hello World from thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), idx_chunk_size, idx_start_idx);
+	  uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
+	  uint64_t idx_start_idx = (thread_id) * idx_chunk_size;
+    //printf("Hello thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), 
+    //                            idx_chunk_size, idx_start_idx);
 
-         // Process only this thread's portion
-	 ar1[start_idx] = idx_start_idx;  
-   for (uint64_t i = start_idx+1; i < end_idx; i++) {
-		 uint64_t randValue = distrib(gen); 
-                 ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
-   }
-
-}
+    // Process only this thread's portion
+	  ar1[start_idx] = idx_start_idx;
+    uint64_t prevValue = idx_start_idx;
+    for (uint64_t i = start_idx+1; i < end_idx; i++) {
+		  uint64_t randValue = distrib(gen); 
+      //ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
+      ar1[i] = (prevValue+ randValue) <  (arCnt*numLayers) ?  (prevValue+ randValue) : (  (arCnt*numLayers) -1 );
+      prevValue = ar1[i];
+      
+    }
+  }
 /* Sequential version
 	 *(ar1)=0;
          for (uint64_t i = 1; i < arCnt; i++) {
@@ -220,10 +225,12 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 int main(void) {
 	struct timespec start, finish;            
 	char *str_log=(char *) malloc(500*sizeof(char)); 
- 	//uint64_t numLat = 512*512;
- 	//uint64_t numLon = 256*256;
- 	uint64_t numLat = 40*500;
- 	uint64_t numLon = 20*500;
+ 	uint64_t numLat = 64*512;
+ 	uint64_t numLon = 32*512;
+ 	//uint64_t numLat = 40*500;
+ 	//uint64_t numLon = 20*500;
+ 	//uint64_t numLat = 40;
+ 	//uint64_t numLon = 20;
 	uint64_t numVegBands = 4;
 	uint64_t numRootLayers = 4;
 	uint64_t numSoilLayers = 8;
@@ -268,16 +275,6 @@ int main(void) {
 	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
 	init_elem(frac_Evap_Rand, numLat*numLon, 0.335);
 	
-  /*#pragma omp parallel
-    {
-        int id = omp_get_thread_num();
-        int total = omp_get_num_threads();
-        #pragma omp critical
-        {
-            std::cout << "Hello from thread " << id << " out of " << total << "\n";
-        }
-    }
-  */
 
   int total ;
   #pragma omp parallel
@@ -296,21 +293,19 @@ int main(void) {
 	print_time(str_log, start, finish);
 	
   clock_gettime(CLOCK_REALTIME, &start); 
-	//init_indices_Random(ar_Prec_Index, numLat*numLon);
+	init_indices_Random(ar_Prec_Index, numLat*numLon);
+  /*
   #pragma omp parallel for
     for (uint64_t j=0; j<(numLat*numLon); j++) {
       *(ar_Prec_Index+j) = *(ar_SurfMoist_Index+ (numLat*numLon)-1 -j);
 	}
+  */
   clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "init rand indices time");  
 	print_time(str_log, start, finish);
 
 	clock_gettime(CLOCK_REALTIME, &start); 
-	//init_indices_Random(ar_Evap_Index, numLat*numLon);
-  #pragma omp parallel for
-    for (uint64_t j=0; j<(numLat*numLon); j++) {
-      *(ar_Evap_Index+j) = *(ar_SurfMoist_Index+j);
-  }
+	init_indices_Random(ar_Evap_Index, numLat*numLon);
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "init rand indices time");  
 	print_time(str_log, start, finish);
@@ -332,7 +327,7 @@ int main(void) {
 	sprintf(str_log, "Run time");  
 	clock_gettime(CLOCK_REALTIME, &start); 
 
-	for ( int loopCnt=0; loopCnt <5; loopCnt++) {
+	for ( int loopCnt=0; loopCnt <1; loopCnt++) {
 	  funSMCalc( out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
             veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
 	  funPrecCalc( out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
