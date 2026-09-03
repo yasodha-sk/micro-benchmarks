@@ -66,18 +66,32 @@ void  __attribute__ ((noinline)) init_indices_Random ( uint64_t *ar1, uint64_t a
 srand(time(NULL));
 #pragma omp parallel
 {
+  int id = omp_get_thread_num();
+  int total = omp_get_num_threads();
 	std::random_device rd;  // a seed source for the random number engine
- 	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
- 	std::uniform_int_distribution<> distrib(0, (arCnt-1));
+ 	//std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+  std::mt19937 gen(1337 + id);
+  uint64_t randStart=0;
+  uint64_t randEnd = arCnt-1;
+  /*if (id <= (total/2)) {
+   randStart=0;
+   randEnd = (arCnt/2)-1;
+  }
+  else {
+    randStart = (arCnt/2);
+    randEnd = arCnt-1;
+  } */
 
- 	#pragma omp parallel for 
+ 	std::uniform_int_distribution<> distrib(randStart, randEnd);
+
+ 	#pragma omp for 
 	for(uint64_t i=0; i<arCnt; i++) {
 	 	//*(ar1+i) =  rand() % (arCnt);
 	 	*(ar1+i) =  distrib(gen);
 	}
 }
 	//for(uint64_t i=0; i<arCnt; i++) 
-	//printf("Rand Indices %lu  size %lu \n", *(ar1+arCnt-1), arCnt);
+	//printf("Rand Indices %lu  size %lu \n", *(ar1+i), arCnt);
 }
 
 TYPE __attribute__ ((noinline)) sum_three_arr(TYPE *arB, TYPE *arA, TYPE *arC, 
