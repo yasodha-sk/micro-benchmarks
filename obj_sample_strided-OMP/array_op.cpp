@@ -27,17 +27,24 @@ void  __attribute__ ((noinline)) init_indices ( uint64_t *ar1, uint64_t arCnt){
 	srand(time(NULL));
 	#pragma omp parallel
 	{
-		std::random_device rd;  // a seed source for the random number engine
-    		std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
-    		std::uniform_int_distribution<> distrib(0, (arCnt-1));
-
-    		/*for (int n = 0; n != 10; ++n)
-        		std::cout << distrib(gen) << ' ';
-    		*/
-  		#pragma omp parallel for 
+  		#pragma omp for 
 		for(uint64_t i=0; i<arCnt; i++) {
-		 	//*(ar1+i) =  rand() % (arCnt);
-		 	//*(ar1+i) =  i;
+		 	*(ar1+i) =  i;
+		}
+	}
+}
+
+void  __attribute__ ((noinline)) init_rand_indices ( uint64_t *ar1, uint64_t arCnt){
+	srand(time(NULL));
+	#pragma omp parallel
+	{
+		//std::random_device rd;  // a seed source for the random number engine
+    //std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+    uint64_t thread_id = omp_get_thread_num();
+    std::mt19937 gen(1337 + thread_id);
+    std::uniform_int_distribution<> distrib(0, (arCnt-1));
+  	#pragma omp for 
+		for(uint64_t i=0; i<arCnt; i++) {
 		 	*(ar1+i) =  distrib(gen);
 		}
 	}
@@ -99,7 +106,6 @@ TYPE __attribute__ ((noinline)) sum_three_arr_out(TYPE *arB, TYPE *arA, TYPE *ar
 			uint64_t *arSmallIndex, uint64_t *arLargeIndex, 
 			uint64_t arSmallSize, uint64_t arLargeSize)
 {
-  TYPE check_sum=0;
   uint64_t i=0, j=0, arACIndex=0, arACIndexNext=0;
   uint64_t arBIndex=0;
   #pragma omp parallel for private( i, j, arBIndex, arACIndex, arACIndexNext) 
@@ -111,8 +117,8 @@ TYPE __attribute__ ((noinline)) sum_three_arr_out(TYPE *arB, TYPE *arA, TYPE *ar
 	arBIndex= *(arSmallIndex+i); //i
 	/*
 	int thread_num = omp_get_thread_num();
-        int cpu_num = sched_getcpu();
-        printf("Thread %3d is running on CPU %3d\n", thread_num, cpu_num);
+  int cpu_num = sched_getcpu();
+  printf("Thread %3d is running on CPU %3d\n", thread_num, cpu_num);
 	printf("thr %d cpu %d Ind B %lu  A, C %lu %lu i %lu j %lu \n", 
 				thread_num, cpu_num, arBIndex, arACIndex, arACIndexNext, i, j);
 	sleep(2);
@@ -121,14 +127,13 @@ TYPE __attribute__ ((noinline)) sum_three_arr_out(TYPE *arB, TYPE *arA, TYPE *ar
       	*(out+i)=  (*(arB+arBIndex))+ ((*(arA+arACIndex))* (*(arC+arACIndex))) 
 				+ ((*(arA+arACIndexNext)* (*(arC+arACIndexNext))));
 	}
-    return check_sum;
+  return 0;
 }
 
 TYPE __attribute__ ((noinline)) sum_three_X_arr_out(TYPE *arB, TYPE *arA, TYPE *arC, TYPE *out, 
 			uint64_t *arSmallIndex, uint64_t *arLargeIndex, 
 			uint64_t arSmallSize, uint64_t arLargeSize)
 {
-  TYPE check_sum=0;
   uint64_t i=0, j=0, arACIndex=0, arACIndexNext=0;
   uint64_t arBIndex=0;
   #pragma omp parallel for private( i, j, arBIndex, arACIndex, arACIndexNext) 
@@ -139,12 +144,12 @@ TYPE __attribute__ ((noinline)) sum_three_X_arr_out(TYPE *arB, TYPE *arA, TYPE *
 	arACIndexNext =  *(arLargeIndex+j+1); //j+1
 	arBIndex= *(arSmallIndex+i); //i
 	// ACACACAC.....ACXACACACAC....ACXACACACAC...
-      	*(out+i)=   ((*(arA+arACIndex))* (*(arC+arACIndex))) 
+   	*(out+i)=   ((*(arA+arACIndex))* (*(arC+arACIndex))) 
 				+ ((*(arA+arACIndexNext)* (*(arC+arACIndexNext))));
 	if(i % 64 == 0) 
 		*(out+i) = (*(arB+arBIndex));
 	}
-    return check_sum;
+  return 0;
 }
 
 
@@ -158,24 +163,23 @@ TYPE __attribute__ ((noinline)) sum_two_arr(TYPE *arA, TYPE *arC,
 	arACIndex = *(arLargeIndex+j);
 	arACIndexNext = *(arLargeIndex+j+1);
 	// ACACACAC
-      	check_sum+=   ((*(arA+arACIndex))+ (*(arC+arACIndex))) + ((*(arA+arACIndexNext)* (*(arC+arACIndexNext))));
+   	check_sum+= ((*(arA+arACIndex))+ (*(arC+arACIndex))) + ((*(arA+arACIndexNext)* (*(arC+arACIndexNext))));
 	}
-    return check_sum;
+  return check_sum;
 }
 
 TYPE __attribute__ ((noinline)) sum_two_arr_out(TYPE *arA, TYPE *arC, TYPE *ar_Out,  
 			uint64_t *arLargeIndex, 
 			uint64_t arLargeSize)
 {
-  TYPE check_sum=0;
   uint64_t  j=0, arACIndex; 
   #pragma omp parallel for private(arACIndex)
   for(j=0; j<arLargeSize; j++) {
 	arACIndex = *(arLargeIndex+j); //j
 	// ACACACAC
-      	*(ar_Out+j)=   ((*(arA+arACIndex))+ (*(arC+arACIndex))); 
+   	*(ar_Out+j)=   ((*(arA+arACIndex))+ (*(arC+arACIndex))); 
 	}
-    return check_sum;
+  return 0;
 }
 
 int main(void) {
@@ -183,14 +187,12 @@ int main(void) {
 	char *str_log=(char *) malloc(500*sizeof(char)); 
   // L3 - Unified Junction 32768K - 1/2 is 2*1024*1024 doubles
   // L1 - Data 32K - half is 2048 (8 bytes)
-  //
   uint64_t arSizeSmall = 2*1024*512*512;
   uint64_t arSizeLarge = arSizeSmall*2;
-  int loopCnt = 1;
+  int loopCnt = 2;
 	
 	TYPE *ar_A = (TYPE *)malloc ((arSizeLarge)*sizeof(TYPE));
 	TYPE *ar_C = (TYPE *)malloc ((arSizeLarge)*sizeof(TYPE));
-	//TYPE *ar_E = (TYPE *)malloc ((arSizeLarge)*sizeof(TYPE));
 	TYPE *ar_B = (TYPE *)malloc ((arSizeSmall)*sizeof(TYPE));
 	TYPE *ar_D = (TYPE *)malloc ((arSizeSmall)*sizeof(TYPE));
 	TYPE *ar_X = (TYPE *)malloc ((arSizeSmall)*sizeof(TYPE));
@@ -202,7 +204,6 @@ int main(void) {
 	TYPE *ar_Out_Large = (TYPE *)malloc ((arSizeLarge)*sizeof(TYPE));
 
 	init_elem(ar_A, arSizeLarge);
-	//init_elem(ar_E, arSizeLarge);
 	init_elem(ar_B, arSizeSmall);
 	init_elem(ar_C, arSizeLarge);
 	init_elem(ar_D, arSizeSmall);
@@ -219,36 +220,64 @@ int main(void) {
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "Array init indices time");  
 	print_time(str_log, start, finish);
+	
+  clock_gettime(CLOCK_REALTIME, &start); 
+	uint64_t *ar_Small_Rand_Index = (uint64_t *)malloc ((arSizeSmall)*sizeof(uint64_t));
+	init_rand_indices(ar_Small_Rand_Index, arSizeSmall);
+	uint64_t *ar_Large_Rand_Index = (uint64_t *)malloc ((arSizeLarge)*sizeof(uint64_t));
+	init_rand_indices(ar_Large_Rand_Index, arSizeLarge);
+	
+	clock_gettime(CLOCK_REALTIME, &finish); 
+	sprintf(str_log, "Array init rand indices time");  
+	print_time(str_log, start, finish);
 
-	TYPE resSmall=0;
-	TYPE resLarge=0;
-	TYPE resLarge1=0;
-	TYPE resSmall1=0;
-	sprintf(str_log, "Array Run time");  
+	TYPE resReturn=0;
+	sprintf(str_log, "Array Strided Run time");  
 	clock_gettime(CLOCK_REALTIME, &start); 
-
-  	for (int i=0; i< loopCnt; i++) {	
+  for (int i=0; i< loopCnt; i++) {	
 		//printf("i - %d \n", i);
-		//resSmall += sum_three_arr( ar_B, ar_A, ar_C, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
-		//resLarge += sum_two_arr( ar_A, ar_C, ar_Large_Index,  arSizeLarge);
-		//resSmall1 += sum_three_arr( ar_D, ar_A, ar_C, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
-		resLarge1 += sum_three_arr_out( ar_B, ar_A, ar_C, ar_Out_Sm1, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
-		resLarge += sum_two_arr_out( ar_A, ar_C, ar_Out_Large, ar_Large_Index,  arSizeLarge);
-		resLarge1 += sum_three_X_arr_out( ar_X, ar_A, ar_C, ar_Out_Sm3, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
-		resLarge1 += sum_three_arr_out( ar_D, ar_C, ar_A, ar_Out_Sm2, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
-		resLarge1 += sum_three_X_arr_out( ar_Y, ar_C, ar_A, ar_Out_Sm4, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
+		resReturn += sum_three_arr_out( ar_B, ar_A, ar_C, ar_Out_Sm1, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
+		resReturn += sum_two_arr_out( ar_A, ar_C, ar_Out_Large, ar_Large_Index,  arSizeLarge);
+		resReturn += sum_three_X_arr_out( ar_X, ar_A, ar_C, ar_Out_Sm3, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
+		resReturn += sum_three_arr_out( ar_D, ar_C, ar_A, ar_Out_Sm2, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
+		resReturn += sum_three_X_arr_out( ar_Y, ar_C, ar_A, ar_Out_Sm4, ar_Small_Index, ar_Large_Index, arSizeSmall, arSizeLarge);
 	}
 	clock_gettime(CLOCK_REALTIME, &finish); 
-	printf("Small %lf ", resSmall);
-	printf("Large %lf ", resLarge);
-	printf("Large1 %lf ", resLarge1);
-	printf("Small1 %lf \n", resSmall1);
+	print_time(str_log, start, finish);
+	printf("Return %lf \n", resReturn);
+	printf("Array values %lf %lf \n", *(ar_Out_Sm4+1), *(ar_Out_Sm4+2));
+	printf("Array values %lf %lf \n", *(ar_Out_Sm3+1), *(ar_Out_Sm3+2));
+	printf("Array values %lf %lf \n", *(ar_Out_Sm2+2), *(ar_Out_Sm2+30));
+	printf("Array values %lf %lf \n", *(ar_Out_Sm1+1), *(ar_Out_Sm1+20));
+	printf("Array values %lf %lf \n", *(ar_Out_Large+1), *(ar_Out_Large+2));
+	
+	resReturn=0;
+  sprintf(str_log, "Array Random Run time");  
+	clock_gettime(CLOCK_REALTIME, &start); 
+  for (int i=0; i< loopCnt; i++) {	
+		//printf("i - %d \n", i);
+		resReturn += sum_three_arr_out( ar_B, ar_A, ar_C, ar_Out_Sm1, ar_Small_Rand_Index, ar_Large_Rand_Index, 
+                                    arSizeSmall, arSizeLarge);
+		resReturn += sum_two_arr_out( ar_A, ar_C, ar_Out_Large, ar_Large_Rand_Index,  arSizeLarge);
+		resReturn += sum_three_X_arr_out( ar_X, ar_A, ar_C, ar_Out_Sm3, ar_Small_Rand_Index, ar_Large_Rand_Index, 
+                                      arSizeSmall, arSizeLarge);
+		resReturn += sum_three_arr_out( ar_D, ar_C, ar_A, ar_Out_Sm2, ar_Small_Rand_Index, ar_Large_Rand_Index, 
+                                    arSizeSmall, arSizeLarge);
+		resReturn += sum_three_X_arr_out( ar_Y, ar_C, ar_A, ar_Out_Sm4, ar_Small_Rand_Index, ar_Large_Rand_Index, 
+                                      arSizeSmall, arSizeLarge);
+	}
+	clock_gettime(CLOCK_REALTIME, &finish); 
+	print_time(str_log, start, finish);
+	printf("Return %lf \n", resReturn);
+	printf("Array values %lf %lf \n", *(ar_Out_Sm4+1), *(ar_Out_Sm4+2));
 	printf("Array values %lf %lf \n", *(ar_Out_Sm3+1), *(ar_Out_Sm3+2));
 	printf("Array values %lf %lf \n", *(ar_Out_Sm2+2), *(ar_Out_Sm2+30));
 	printf("Array values %lf %lf \n", *(ar_Out_Sm1+1), *(ar_Out_Sm1+20));
 	printf("Array values %lf %lf \n", *(ar_Out_Large+1), *(ar_Out_Large+2));
                                        
-	print_time(str_log, start, finish);
   free(ar_Small_Index);
+  free(ar_Large_Index);
+  free(ar_Small_Rand_Index);
+  free(ar_Large_Rand_Index);
   return 0;
 }
