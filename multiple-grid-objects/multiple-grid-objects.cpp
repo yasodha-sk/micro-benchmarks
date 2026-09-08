@@ -12,6 +12,8 @@
 #include <sched.h>
 #include <iostream>
 #include <random>
+#include <numa.h>
+#include <numaif.h>
 
 #define TYPE double
 void  __attribute__ ((noinline)) init_elem ( TYPE *ar1, uint64_t arCnt, TYPE inValue){
@@ -244,6 +246,11 @@ int main(void) {
 	TYPE *veg_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
 	TYPE *root_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
 	TYPE *canopy_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numCanopyLayers)*sizeof(TYPE));
+
+  int *mats = (int *) numa_alloc_onnode( 100 * sizeof(int), 0);
+	int numa_node = -1;
+        get_mempolicy(&numa_node, NULL, 0, (void*)mats, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node mats %d \n", numa_node);
 	
 	/* Regular Random Indices */	
 	uint64_t *veg_Reg_Rand_Index = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));

@@ -7,7 +7,7 @@ all: exe-grid
 
 # Rule to create the executable 'main' from 'main.c'
 exe-grid: multiple-grid-objects.cpp
-	$(CC) $(CFLAGS) -o exe-grid multiple-grid-objects.cpp
+	$(CC) $(CFLAGS) -o exe-grid multiple-grid-objects.cpp -v -I/home/yasodhan/oldhomedir/benchmark/numactl/ -L /home/yasodhan/oldhomedir/benchmark/numactl/.libs/ -lnuma
 
 # Rule to remove the built files
 clean:
