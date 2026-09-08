@@ -7,7 +7,7 @@ all: vec_exe
 
 # Rule to create the executable 'main' from 'main.c'
 vec_exe: main.cpp
-	$(CC) $(CFLAGS) -o vec_exe main.cpp -v -I/home/yasodhan/benchmark/numactl/ -L /home/yasodhan/benchmark/numactl/.libs/ -lnuma
+	$(CC) $(CFLAGS) -o vec_exe main.cpp -v -I/home/yasodhan/oldhomedir/benchmark/numactl/ -L /home/yasodhan/oldhomedir/benchmark/numactl/.libs/ -lnuma
 
 # Rule to remove the built files
 clean:
