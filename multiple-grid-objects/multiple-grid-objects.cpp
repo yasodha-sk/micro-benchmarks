@@ -14,8 +14,6 @@
 #include <random>
 
 #define TYPE double
-
-
 void  __attribute__ ((noinline)) init_elem ( TYPE *ar1, uint64_t arCnt, TYPE inValue){
   	#pragma omp parallel for 
 	 for(uint64_t i=0; i<arCnt; i++) {
@@ -47,24 +45,30 @@ void init_indices_Reg_Rand ( uint64_t  *ar1, uint64_t arCnt, uint64_t numLayers)
     // Process only this thread's portion
 	  ar1[start_idx] = idx_start_idx;
     uint64_t prevValue = idx_start_idx;
-    for (uint64_t i = start_idx+1; i < end_idx; i++) {
-		  uint64_t randValue = distrib(gen); 
-      //ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
-      ar1[i] = (prevValue+ randValue) <  (arCnt*numLayers) ?  (prevValue+ randValue) : (  (arCnt*numLayers) -1 );
-      prevValue = ar1[i];
-      
+    if (thread_id != (total_threads -1) ){
+      for (uint64_t i = start_idx+1; i < end_idx; i++) {
+		    uint64_t randValue = distrib(gen); 
+        //ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
+        ar1[i] = (prevValue+ randValue) ; // <  (arCnt*numLayers) ?  (prevValue+ randValue) : (  (arCnt*numLayers) -1 );
+        prevValue = ar1[i];
+      }
+    } else {
+      for (uint64_t i = start_idx+1; i < end_idx; i++) {
+		    uint64_t randValue = distrib(gen); 
+        //ar1[i] = (ar1[i-1]+ randValue) <  (arCnt*numLayers) ?  (ar1[i-1]+ randValue) : (  (arCnt*numLayers) -1 );
+        ar1[i] = (prevValue+ randValue) <  (arCnt*numLayers) ?  (prevValue+ randValue) : (  (arCnt*numLayers) -1 );
+        prevValue = ar1[i];
+      }
     }
   }
-/* Sequential version
+  /* Sequential version
 	 *(ar1)=0;
-         for (uint64_t i = 1; i < arCnt; i++) {
+   for (uint64_t i = 1; i < arCnt; i++) {
 	 	*(ar1+i) =  *(ar1+i-1) + distrib(gen);
-         }
-*/
-	
+   }
+  */
 	//for(uint64_t i=0; i<arCnt; i++) 
 	//printf("Reg Rand Indices %lu  size %lu \n", *(ar1+i), arCnt*numLayers);
-
 }
 
 void  __attribute__ ((noinline)) init_indices_Random ( uint64_t *ar1, uint64_t arCnt){
@@ -72,7 +76,7 @@ srand(time(NULL));
 #pragma omp parallel
 {
   int id = omp_get_thread_num();
-  int total = omp_get_num_threads();
+  //int total = omp_get_num_threads();
 	std::random_device rd;  // a seed source for the random number engine
  	//std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
   std::mt19937 gen(1337 + id);
@@ -91,7 +95,6 @@ srand(time(NULL));
 
  	#pragma omp for 
 	for(uint64_t i=0; i<arCnt; i++) {
-	 	//*(ar1+i) =  rand() % (arCnt);
 	 	*(ar1+i) =  distrib(gen);
 	}
 }
@@ -312,7 +315,17 @@ int main(void) {
 
 	clock_gettime(CLOCK_REALTIME, &start); 
   init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
+	clock_gettime(CLOCK_REALTIME, &finish); 
+	sprintf(str_log, "init reg rand indices time");  
+	print_time(str_log, start, finish);
+
+	clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Reg_Rand(root_Reg_Rand_Index,  ( numLat*numLon), numRootLayers); 
+	clock_gettime(CLOCK_REALTIME, &finish); 
+	sprintf(str_log, "init reg rand indices time");  
+	print_time(str_log, start, finish);
+
+	clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Reg_Rand(canopy_Reg_Rand_Index,  ( numLat*numLon), numCanopyLayers);
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "init reg rand indices time");  
@@ -328,15 +341,14 @@ int main(void) {
 	clock_gettime(CLOCK_REALTIME, &start); 
 
 	for ( int loopCnt=0; loopCnt <1; loopCnt++) {
-	  funSMCalc( out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
             veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
-	  funPrecCalc( out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
               frac_Prec_Rand, ar_Prec_Index);  
-	  funEvapCalc( out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funEvapCalc(out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg, numSoilLayers, 
               frac_Evap_Rand, ar_Evap_Index);  
-	  funAtmosCalc( out_AtmosEffect, (numLat*numLon),  soil_Reg, numSoilLayers, atmos_Reg, numAtmosValues);  
+	  funAtmosCalc(out_AtmosEffect, (numLat*numLon),  soil_Reg, numSoilLayers, atmos_Reg, numAtmosValues);  
 	}
-
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	print_time(str_log, start, finish);
 	uint64_t i=0;
