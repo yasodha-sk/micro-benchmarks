@@ -1,5 +1,5 @@
 set -x
-repeatCnt=10
+repeatCnt=1
 set -x
 cur_date=$(date +"%d-%m")
 threads=16
