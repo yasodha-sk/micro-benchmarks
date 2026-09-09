@@ -262,11 +262,15 @@ int main(void) {
 
  	/* Regular with NO reuse */	
 	TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
+  get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node atmos_Reg %d \n", numa_node);
 
  	/* Random */	
 	TYPE *frac_SurfMoist_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *frac_Prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *frac_Evap_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+  get_mempolicy(&numa_node, NULL, 0, (void*)frac_Evap_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node frac_Evap_Rand %d \n", numa_node);
 	
  	/* Random Indices */	
 	uint64_t *ar_SurfMoist_Index = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
