@@ -228,6 +228,12 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 }	
 
 int main(void) {
+  int total ;
+  #pragma omp parallel
+  {
+    total = omp_get_num_threads();
+  }
+  std::cout << "number of threads " <<  total << "\n";
 	struct timespec start, finish;            
 	char *str_log=(char *) malloc(500*sizeof(char)); 
  	uint64_t numLat = 64*512;
@@ -240,29 +246,34 @@ int main(void) {
 	uint64_t numRootLayers = 4;
 	uint64_t numSoilLayers = 8;
 	uint64_t numCanopyLayers = 4;
-	uint64_t numAtmosValues= 10;
-
- 	/* Regular Random - using random number of adjacent elements */	
-	TYPE *veg_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
-	TYPE *root_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
-	TYPE *canopy_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numCanopyLayers)*sizeof(TYPE));
+	uint64_t numAtmosValues= 8;
 
 	int numa_node = -1;
-  int *mats = (int *) malloc( 1024* 4096 * sizeof(int));
+  numa_node = numa_preferred();
+  int local_numa = numa_preferred();
+  int far_numa = (local_numa == 0) ? 1 :0; 
+	printf("numa_node preferred  %d \n", numa_node);
+  /* START Check numa_alloc functionality code */
+  int *mats = (int *) malloc( 1024 * sizeof(int));
   *mats = 1; 
   get_mempolicy(&numa_node, NULL, 0, (void*)mats, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("numa_node mats %d \n", numa_node);
 
-  int *mats_0 = (int *) numa_alloc_onnode( 1024* 4096 * sizeof(int), 0);
+  int *mats_0 = (int *) numa_alloc_onnode( 1024 * sizeof(int), 0);
   *mats_0 = 2; 
   get_mempolicy(&numa_node, NULL, 0, (void*)mats_0, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("numa_node mats_0 %d \n", numa_node);
  
- int *mats_1 = (int *) numa_alloc_onnode( 1024* 4096 * sizeof(int), 1);
+ int *mats_1 = (int *) numa_alloc_onnode( 1024 * sizeof(int), 1);
   *mats_1 = 2; 
   get_mempolicy(&numa_node, NULL, 0, (void*)mats_1, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("numa_node mats_1 %d \n", numa_node);
+  /* END Check numa_alloc functionality code */
   
+ 	/* Regular Random - using random number of adjacent elements */	
+	TYPE *veg_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
+	TYPE *root_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
+	TYPE *canopy_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numCanopyLayers)*sizeof(TYPE));
 	
 	/* Regular Random Indices */	
 	uint64_t *veg_Reg_Rand_Index = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
@@ -270,48 +281,46 @@ int main(void) {
 	uint64_t *canopy_Reg_Rand_Index = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
 
  	/* Regular with reuse */	
-	TYPE *soil_Reg = (TYPE *)malloc (( numLat*numLon*numSoilLayers)*sizeof(TYPE));
+	TYPE *soil_Reg = (TYPE *)numa_alloc_onnode (( numLat*numLon*numSoilLayers)*sizeof(TYPE), local_numa);
 
  	/* Regular with NO reuse */	
-	TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
-  get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("numa_node atmos_Reg %d \n", numa_node);
+	TYPE *atmos_Reg = (TYPE *)numa_alloc_onnode (( numLat*numLon*numAtmosValues)*sizeof(TYPE), far_numa);
 
  	/* Random */	
 	TYPE *frac_SurfMoist_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *frac_Prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *frac_Evap_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-  get_mempolicy(&numa_node, NULL, 0, (void*)frac_Evap_Rand, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("numa_node frac_Evap_Rand %d \n", numa_node);
 	
  	/* Random Indices */	
 	uint64_t *ar_SurfMoist_Index = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 	uint64_t *ar_Prec_Index = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 	uint64_t *ar_Evap_Index = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
+	
+  TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_PrecLeft = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_EvapOut = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_AtmosEffect = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_Moisture = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
  
   printf("start init_elem \n");
 	init_elem(veg_Reg_Rand, numLat*numLon*numVegBands, 0.35);
 	init_elem(root_Reg_Rand, numLat*numLon*numRootLayers, 0.678);
 	init_elem(canopy_Reg_Rand, numLat*numLon*numCanopyLayers, 0.355);
-
 	init_elem(soil_Reg, numLat*numLon*numSoilLayers, 0.355);
+  get_mempolicy(&numa_node, NULL, 0, (void*)soil_Reg, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node soil_Reg %d \n", numa_node);
 	init_elem(atmos_Reg, numLat*numLon*numAtmosValues, 0.365);
-
+  get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node atmos_Reg %d \n", numa_node);
 	init_elem(frac_SurfMoist_Rand, numLat*numLon, 0.375);
 	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
 	init_elem(frac_Evap_Rand, numLat*numLon, 0.335);
+  get_mempolicy(&numa_node, NULL, 0, (void*)frac_Evap_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node frac_Evap_Rand %d \n", numa_node);
 	
-
-  int total ;
-  #pragma omp parallel
-  {
-    total = omp_get_num_threads();
-  }
-  std::cout << "number of threads " <<  total << "\n";
-
-  init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
-	srand(time(NULL)); 
   printf("start init_indices \n");
+  init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
+
 	clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Random(ar_SurfMoist_Index, numLat*numLon);
 	clock_gettime(CLOCK_REALTIME, &finish); 
@@ -320,12 +329,11 @@ int main(void) {
 	
   clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Random(ar_Prec_Index, numLat*numLon);
-  /*
+  /* copy random in reverse order if needed
   #pragma omp parallel for
     for (uint64_t j=0; j<(numLat*numLon); j++) {
       *(ar_Prec_Index+j) = *(ar_SurfMoist_Index+ (numLat*numLon)-1 -j);
-	}
-  */
+	} */
   clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "init rand indices time");  
 	print_time(str_log, start, finish);
@@ -353,13 +361,7 @@ int main(void) {
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	sprintf(str_log, "init reg rand indices time");  
 	print_time(str_log, start, finish);
-	
 
-	TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-	TYPE *out_PrecLeft = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-	TYPE *out_EvapOut = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-	TYPE *out_AtmosEffect = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-	TYPE *out_Moisture = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	sprintf(str_log, "Run time");  
 	clock_gettime(CLOCK_REALTIME, &start); 
 
