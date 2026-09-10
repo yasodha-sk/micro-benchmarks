@@ -234,14 +234,14 @@ int main(void) {
 
 	struct timespec start, finish;            
 	char *str_log=(char *) malloc(500*sizeof(char)); 
- 	uint64_t numLat = 64*512;
+ 	uint64_t numLat = 32*512;
  	uint64_t numLon = 32*512;
  	//uint64_t numLat = 40*500;
  	//uint64_t numLon = 20*500;
  	//uint64_t numLat = 40;
  	//uint64_t numLon = 20;
-	uint64_t numVegBands = 4;
-	uint64_t numRootLayers = 4;
+	uint64_t numVegBands = 32;
+	uint64_t numRootLayers = 64;
 	uint64_t numSoilLayers = 8;
 	uint64_t numCanopyLayers = 4;
 	uint64_t numAtmosValues= 8;
