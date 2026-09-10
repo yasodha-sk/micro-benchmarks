@@ -125,7 +125,7 @@ TYPE __attribute__ ((noinline)) sum_three_arr(TYPE *arB, TYPE *arA, TYPE *arC,
 
 void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElements, TYPE *root_Reg_Rand, 
         uint64_t *root_Reg_Rand_Index, 
-				TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *veg_Reg_Rand, uint64_t *veg_Reg_Rand_Index, 
+				TYPE *soil_Reg_Reuse, uint64_t numSoilLayers, TYPE *veg_Reg_Rand, uint64_t *veg_Reg_Rand_Index, 
 				TYPE *frac_SurfMoist_Rand, uint64_t *ar_SurfMoist_Index)
 {
 	printf(" in funSMCalc \n");
@@ -141,7 +141,7 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
 			}
 		}
 		for (vegIndex=*(veg_Reg_Rand_Index+i); vegIndex < (*(veg_Reg_Rand_Index+i+1)); vegIndex++) {
@@ -153,7 +153,7 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 }
 
 void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElements, TYPE *root_Reg_Rand, 
-    uint64_t *root_Reg_Rand_Index, TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *frac_Prec_Rand, uint64_t *ar_Prec_Index)  
+    uint64_t *root_Reg_Rand_Index, TYPE *soil_Reg_Reuse, uint64_t numSoilLayers, TYPE *frac_Prec_Rand, uint64_t *ar_Prec_Index)  
 {
 	printf(" in funPrecCalc \n");
   uint64_t i=0, j=0, k=0;
@@ -168,7 +168,7 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
 			}
 		}
 		for (rootIndex=*(root_Reg_Rand_Index+i); rootIndex < (*(root_Reg_Rand_Index+i+1)); rootIndex++) {
@@ -180,7 +180,7 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 }
 
 void __attribute__ ((noinline))	funEvapCalc(TYPE *out_EvapOut, uint64_t numElements, TYPE *canopy_Reg_Rand, 
-    uint64_t *canopy_Reg_Rand_Index, TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *frac_Evap_Rand, uint64_t *ar_Evap_Index)
+    uint64_t *canopy_Reg_Rand_Index, TYPE *soil_Reg_Reuse, uint64_t numSoilLayers, TYPE *frac_Evap_Rand, uint64_t *ar_Evap_Index)
 {
 	printf(" in funEvapCalc \n");
   uint64_t i=0, j=0, k=0;
@@ -195,7 +195,7 @@ void __attribute__ ((noinline))	funEvapCalc(TYPE *out_EvapOut, uint64_t numEleme
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
 			}
 		}
 		for (canopyIndex=*(canopy_Reg_Rand_Index+i); canopyIndex < (*(canopy_Reg_Rand_Index+i+1)); canopyIndex++) {
@@ -207,7 +207,7 @@ void __attribute__ ((noinline))	funEvapCalc(TYPE *out_EvapOut, uint64_t numEleme
 }
 
 void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t numElements,  
-                TYPE *soil_Reg, uint64_t numSoilLayers, TYPE *atmos_Reg, uint64_t numAtmosValues)
+                TYPE *soil_Reg_Reuse, uint64_t numSoilLayers, TYPE *atmos_Reg, uint64_t numAtmosValues)
 {
 	printf(" in funAtmosCalc \n");
   uint64_t i=0, j=0, k=0;
@@ -218,7 +218,7 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 		outSoil =0;
 		outAtmos=0;
 		for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg+i+j)) * (0.5); 
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5); 
 		}
 		for (k=0; k<numAtmosValues; k++) {
 				outAtmos += (*(atmos_Reg+i+k)) * (0.5); 
@@ -229,11 +229,9 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 
 int main(void) {
   int total ;
-  #pragma omp parallel
-  {
-    total = omp_get_num_threads();
-  }
+  total = omp_get_max_threads();
   std::cout << "number of threads " <<  total << "\n";
+
 	struct timespec start, finish;            
 	char *str_log=(char *) malloc(500*sizeof(char)); 
  	uint64_t numLat = 64*512;
@@ -252,8 +250,9 @@ int main(void) {
   numa_node = numa_preferred();
   int local_numa = numa_preferred();
   int far_numa = (local_numa == 0) ? 1 :0; 
-	printf("numa_node preferred  %d \n", numa_node);
-  /* START Check numa_alloc functionality code */
+	printf("numa_node preferred %d local %d far %d \n", numa_node, local_numa, far_numa);
+
+  /* START Check numa_alloc functionality code 
   int *mats = (int *) malloc( 1024 * sizeof(int));
   *mats = 1; 
   get_mempolicy(&numa_node, NULL, 0, (void*)mats, MPOL_F_NODE | MPOL_F_ADDR);
@@ -268,12 +267,13 @@ int main(void) {
   *mats_1 = 2; 
   get_mempolicy(&numa_node, NULL, 0, (void*)mats_1, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("numa_node mats_1 %d \n", numa_node);
-  /* END Check numa_alloc functionality code */
+  // END Check numa_alloc functionality code 
+  */
   
  	/* Regular Random - using random number of adjacent elements */	
-	TYPE *veg_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
-	TYPE *root_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
-	TYPE *canopy_Reg_Rand = (TYPE *)malloc (( numLat*numLon*numCanopyLayers)*sizeof(TYPE));
+	TYPE *veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
+	TYPE *root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
+	TYPE *canopy_Reg_Rand = (TYPE *) malloc (( numLat*numLon*numCanopyLayers)*sizeof(TYPE));
 	
 	/* Regular Random Indices */	
 	uint64_t *veg_Reg_Rand_Index = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
@@ -281,13 +281,13 @@ int main(void) {
 	uint64_t *canopy_Reg_Rand_Index = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
 
  	/* Regular with reuse */	
-	TYPE *soil_Reg = (TYPE *)numa_alloc_onnode (( numLat*numLon*numSoilLayers)*sizeof(TYPE), local_numa);
+	TYPE *soil_Reg_Reuse = (TYPE *)malloc (( numLat*numLon*numSoilLayers)*sizeof(TYPE));
 
  	/* Regular with NO reuse */	
-	TYPE *atmos_Reg = (TYPE *)numa_alloc_onnode (( numLat*numLon*numAtmosValues)*sizeof(TYPE), far_numa);
+	TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
 
  	/* Random */	
-	TYPE *frac_SurfMoist_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	TYPE *frac_Prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *frac_Evap_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	
@@ -304,19 +304,27 @@ int main(void) {
  
   printf("start init_elem \n");
 	init_elem(veg_Reg_Rand, numLat*numLon*numVegBands, 0.35);
+  get_mempolicy(&numa_node, NULL, 0, (void*)veg_Reg_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_far veg_Reg_Rand %d ", numa_node);
 	init_elem(root_Reg_Rand, numLat*numLon*numRootLayers, 0.678);
+  get_mempolicy(&numa_node, NULL, 0, (void*)root_Reg_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("root_Reg_Rand %d ", numa_node);
+	init_elem(frac_SurfMoist_Rand, numLat*numLon, 0.375);
+  get_mempolicy(&numa_node, NULL, 0, (void*)frac_SurfMoist_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("frac_SurfMoist_Rand %d \n", numa_node);
+
+	init_elem(soil_Reg_Reuse, numLat*numLon*numSoilLayers, 0.355);
+  get_mempolicy(&numa_node, NULL, 0, (void*)soil_Reg_Reuse, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("numa_node soil_Reg_Reuse %d ", numa_node);
 	init_elem(canopy_Reg_Rand, numLat*numLon*numCanopyLayers, 0.355);
-	init_elem(soil_Reg, numLat*numLon*numSoilLayers, 0.355);
-  get_mempolicy(&numa_node, NULL, 0, (void*)soil_Reg, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("numa_node soil_Reg %d \n", numa_node);
 	init_elem(atmos_Reg, numLat*numLon*numAtmosValues, 0.365);
   get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("numa_node atmos_Reg %d \n", numa_node);
-	init_elem(frac_SurfMoist_Rand, numLat*numLon, 0.375);
+	printf("atmos_Reg %d ", numa_node);
+
 	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
 	init_elem(frac_Evap_Rand, numLat*numLon, 0.335);
   get_mempolicy(&numa_node, NULL, 0, (void*)frac_Evap_Rand, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("numa_node frac_Evap_Rand %d \n", numa_node);
+	printf("frac_Evap_Rand %d \n", numa_node);
 	
   printf("start init_indices \n");
   init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
@@ -366,13 +374,13 @@ int main(void) {
 	clock_gettime(CLOCK_REALTIME, &start); 
 
 	for ( int loopCnt=0; loopCnt <1; loopCnt++) {
-	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg_Reuse, numSoilLayers, 
             veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
-	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg_Reuse, numSoilLayers, 
               frac_Prec_Rand, ar_Prec_Index);  
-	  funEvapCalc(out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg, numSoilLayers, 
+	  funEvapCalc(out_EvapOut, (numLat*numLon), canopy_Reg_Rand, canopy_Reg_Rand_Index, soil_Reg_Reuse, numSoilLayers, 
               frac_Evap_Rand, ar_Evap_Index);  
-	  funAtmosCalc(out_AtmosEffect, (numLat*numLon),  soil_Reg, numSoilLayers, atmos_Reg, numAtmosValues);  
+	  funAtmosCalc(out_AtmosEffect, (numLat*numLon),  soil_Reg_Reuse, numSoilLayers, atmos_Reg, numAtmosValues);  
 	}
 	clock_gettime(CLOCK_REALTIME, &finish); 
 	print_time(str_log, start, finish);
