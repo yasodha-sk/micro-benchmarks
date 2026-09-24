@@ -227,14 +227,9 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 	}
 }	
 
-int main(void) {
-  int total ;
-  total = omp_get_max_threads();
-  std::cout << "number of threads " <<  total << "\n";
-
-	struct timespec start, finish;            
-	char *str_log=(char *) malloc(500*sizeof(char)); 
- 	uint64_t numLat = 32*512;
+int main(int argc, char *argv[]) {
+ 	
+  uint64_t numLat = 32*512;
  	uint64_t numLon = 32*512;
  	//uint64_t numLat = 40*500;
  	//uint64_t numLon = 20*500;
@@ -245,6 +240,44 @@ int main(void) {
 	uint64_t numSoilLayers = 8;
 	uint64_t numCanopyLayers = 4;
 	uint64_t numAtmosValues= 8;
+	
+  struct timespec start, finish;            
+	char *str_log=(char *) malloc(500*sizeof(char)); 
+
+  int opt;
+  char *farMemData = NULL;
+  // ':' after 'f' means it requires an argument
+  while ((opt = getopt(argc, argv, "hf:")) != -1) {
+    switch (opt) {
+        case 'h':
+            printf("Usage: %s [-h] [-f reg|rand|both]\n", argv[0]);
+            break;
+        case 'f':
+            farMemData = optarg; // optarg stores the option's value
+            printf("Far memory object is access pattern is : %s \n", farMemData);
+            break;
+        default:
+            fprintf(stderr, "Unknown option.\n");
+            return 1;
+    }
+  }
+  int farMemOption=0; 
+  if (strcmp(farMemData, "reg") == 0) {
+        printf("Far memory object has regular access \n");
+        farMemOption=1;
+  }
+  if (strcmp(farMemData, "rand") == 0) {
+        printf("Far memory object has random access \n");
+        farMemOption=2;
+  }
+  if (strcmp(farMemData, "both") == 0) {
+        printf("Far memory object has random  and regular access \n");
+        farMemOption=3;
+  }
+
+  int total ;
+  total = omp_get_max_threads();
+  std::cout << "number of threads " <<  total << "\n";
 
 	int numa_node = -1;
   numa_node = numa_preferred();
@@ -285,7 +318,7 @@ int main(void) {
 	TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
 
  	/* Random */	
-	TYPE *frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
+	TYPE *frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	TYPE *frac_Prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	
  	/* Random Indices */	
