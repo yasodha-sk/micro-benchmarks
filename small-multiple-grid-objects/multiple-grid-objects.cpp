@@ -252,6 +252,7 @@ int main(int argc, char *argv[])
 	
   struct timespec start, finish;            
 	char *str_log=(char *) malloc(500*sizeof(char)); 
+	char *str_run_option=(char *) malloc(500*sizeof(char)); 
 
   int opt;
   char *farMemData = NULL;
@@ -274,17 +275,22 @@ int main(int argc, char *argv[])
     }
   }
   int farMemOption=0; 
+
   if (farMemData == NULL) {
     printf("All critical data allocated in local memory \n");
+    sprintf(str_run_option, "RUNTIME All local:");
   } else if (strcmp(farMemData, "reg") == 0) {
-        printf("Far memory object has regular access \n");
-        farMemOption=1;
+    printf("Far memory object has regular access \n");
+    farMemOption=1;
+    sprintf(str_run_option, "RUNTIME Reg-Rand Far: ");
   } else if (strcmp(farMemData, "rand") == 0) {
-        printf("Far memory object has random access \n");
-        farMemOption=2;
+    printf("Far memory object has random access \n");
+    farMemOption=2;
+    sprintf(str_run_option, "RUNTIME Random Far");
   } else if (strcmp(farMemData, "both") == 0) {
-        printf("Far memory object has random  and regular access \n");
-        farMemOption=3;
+    printf("Far memory object has random  and regular access \n");
+    farMemOption=3;
+    sprintf(str_run_option, "RUNTIME Both Far");
   }
 
   int total ;
@@ -321,26 +327,29 @@ int main(int argc, char *argv[])
 
  	/* Random */	
 	TYPE *frac_SurfMoist_Rand ;
-	TYPE *frac_Prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *frac_Prec_Rand; // = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 
   if ( farMemOption == 0 ) {
 	  frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
+	  frac_Prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
   }
-
   if ( farMemOption == 1 ) {
 	  frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
+	  frac_Prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
   }
   if ( farMemOption == 2 ) {
 	  frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+	  frac_Prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
   }
   if ( farMemOption == 3 ) {
 	  frac_SurfMoist_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+	  frac_Prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
   }
@@ -375,25 +384,25 @@ int main(int argc, char *argv[])
 	printf("root_Reg_Rand %d ", numa_node);
 	init_elem(frac_SurfMoist_Rand, numLat*numLon, 0.375);
   get_mempolicy(&numa_node, NULL, 0, (void*)frac_SurfMoist_Rand, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("frac_SurfMoist_Rand %d \n", numa_node);
+	printf("frac_SurfMoist_Rand %d ", numa_node);
+	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
+  get_mempolicy(&numa_node, NULL, 0, (void*)frac_Prec_Rand, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("frac_Prec_Rand %d \n", numa_node);
 
 	init_elem(soil_Reg_Reuse, numLat*numLon*numSoilLayers, 0.355);
   get_mempolicy(&numa_node, NULL, 0, (void*)soil_Reg_Reuse, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("MALLOC numa soil_Reg_Reuse %d ", numa_node);
+	printf("MALLOC soil_Reg_Reuse %d ", numa_node);
 	init_elem(atmos_Reg, numLat*numLon*numAtmosValues, 0.365);
   get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("atmos_Reg %d ", numa_node);
 
-	init_elem(frac_Prec_Rand, numLat*numLon, 0.345);
-  get_mempolicy(&numa_node, NULL, 0, (void*)frac_Prec_Rand, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("frac_Prec_Rand %d \n", numa_node);
 	
   #ifdef DEBUG 
     printf("start init_indices \n");
   #endif
   init_indices_Reg_Rand(veg_Reg_Rand_Index , ( numLat*numLon), numVegBands);
   get_mempolicy(&numa_node, NULL, 0, (void*)veg_Reg_Rand_Index, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("MALLOC veg_Reg_Rand_Index %d ", numa_node);
+	printf("veg_Reg_Rand_Index %d \n", numa_node);
 
 	clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Random(ar_SurfMoist_Index, numLat*numLon);
@@ -403,7 +412,7 @@ int main(int argc, char *argv[])
 	  print_time(str_log, start, finish);
   #endif
   get_mempolicy(&numa_node, NULL, 0, (void*)ar_SurfMoist_Index, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("ar_SurfMoist_Index %d ", numa_node);
+	printf("MALLOC ar_SurfMoist_Index %d ", numa_node);
 	
   clock_gettime(CLOCK_REALTIME, &start); 
 	init_indices_Random(ar_Prec_Index, numLat*numLon);
@@ -430,10 +439,8 @@ int main(int argc, char *argv[])
   get_mempolicy(&numa_node, NULL, 0, (void*)root_Reg_Rand_Index, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("root_Reg_Rand_Index %d \n", numa_node);
 
-	sprintf(str_log, "RUNTIME ");  
 	clock_gettime(CLOCK_REALTIME, &start); 
-
-	for ( int loopCnt=0; loopCnt <1; loopCnt++) {
+	for ( int loopCnt=0; loopCnt <2; loopCnt++) {
 	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg_Reuse, numSoilLayers, 
             veg_Reg_Rand, veg_Reg_Rand_Index, frac_SurfMoist_Rand, ar_SurfMoist_Index);  
 	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Index, soil_Reg_Reuse, numSoilLayers, 
@@ -461,6 +468,6 @@ int main(int argc, char *argv[])
 	printf("prec %f %f ", *(out_PrecLeft+1), *(out_PrecLeft+((numLat*numLon)-1)));
 	printf("atmos %f %f \n", *(out_AtmosEffect+1), *(out_AtmosEffect+((numLat*numLon)-1)));
 	
-  print_time(str_log, start, finish);
+  print_time(str_run_option, start, finish);
   return 0;
 }
