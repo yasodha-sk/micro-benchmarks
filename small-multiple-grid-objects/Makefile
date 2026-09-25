@@ -1,16 +1,21 @@
 # Variables make the file easier to update
 CC = g++
 CFLAGS = -Wall -fopenmp
+TARGET = exe-grid
 
 # The first target is the default one run by 'make'
-all: exe-grid
+all: CFLAGS += -O2 -DNDEBUG
+all: $(TARGET)
 
-# Rule to create the executable 'main' from 'main.c'
+# Debug build target
+debug: CFLAGS += -g -O0 -DDEBUG
+debug: $(TARGET)
+
+# Rule to create the executable 
 exe-grid: multiple-grid-objects.cpp
-	$(CC) $(CFLAGS) -o exe-grid multiple-grid-objects.cpp -v -I/home/yasodhan/oldhomedir/benchmark/numactl/ -L /home/yasodhan/oldhomedir/benchmark/numactl/.libs/ -lnuma
+	$(CC) $(CFLAGS) -o $(TARGET) multiple-grid-objects.cpp -v -I/home/yasodhan/oldhomedir/benchmark/numactl/ -L /home/yasodhan/oldhomedir/benchmark/numactl/.libs/ -lnuma
 
 # Rule to remove the built files
 clean:
 	rm -f exe-grid
 
-#gcc -fopenmp array_op.c -o exe-arr

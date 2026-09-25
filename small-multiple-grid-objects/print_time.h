@@ -18,5 +18,5 @@ void print_time(char *str_log, struct timespec t1, struct timespec t2)
                 td.tv_nsec -= NS_PER_SECOND;                
                 td.tv_sec++;                               
         }                                                 
-        printf(" %s %d.%.9ld\n", str_log, (int)td.tv_sec, td.tv_nsec);  
+        printf("%s %d.%.9ld\n", str_log, (int)td.tv_sec, td.tv_nsec);  
 }      
