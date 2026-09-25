@@ -240,10 +240,10 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 int main(int argc, char *argv[]) 
 {
   // Grid size
-  //uint64_t numLat = 32*512;
- 	//uint64_t numLon = 32*512;
- 	uint64_t numLat = 40;
- 	uint64_t numLon = 20;
+  uint64_t numLat = 16*512;
+ 	uint64_t numLon = 16*512;
+ 	//uint64_t numLat = 40;
+ 	//uint64_t numLon = 20;
 	uint64_t numVegBands = 32;
 	uint64_t numRootLayers = 64;
 	uint64_t numSoilLayers = 8;
@@ -345,16 +345,16 @@ int main(int argc, char *argv[])
 	TYPE *prec_Rand; // = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	
   /* Regular Random Indices */	
-	uint64_t *veg_Reg_Rand_Idx ; //= (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
-	uint64_t *root_Reg_Rand_Idx; // = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
+	uint64_t *veg_Reg_Rand_Idx ; //= (uint64_t *)malloc (( numLat*numLon)*sizeof(uint64_t));
+	uint64_t *root_Reg_Rand_Idx; // = (uint64_t *)malloc (( numLat*numLon)*sizeof(uint64_t));
  	
   /* Random Indices */	
 	uint64_t *sm_Rand_Idx; // = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 	uint64_t *prec_Rand_Idx; // = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 
   if ( farMemOption < 4 ) {
-	  veg_Reg_Rand_Idx = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
-	  root_Reg_Rand_Idx = (uint64_t *)malloc (( numLat*numLon)*sizeof(TYPE));
+	  veg_Reg_Rand_Idx = (uint64_t *)malloc (( numLat*numLon)*sizeof(uint64_t));
+	  root_Reg_Rand_Idx = (uint64_t *)malloc (( numLat*numLon)*sizeof(uint64_t));
 	  sm_Rand_Idx = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 	  prec_Rand_Idx = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
   }
@@ -382,8 +382,8 @@ int main(int argc, char *argv[])
   } else if ( farMemOption == 4 ) {
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
+	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
 	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), local_numa);
@@ -391,8 +391,8 @@ int main(int argc, char *argv[])
   } else if ( farMemOption == 5 ) {
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
+	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), local_numa);
+	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), local_numa);
 	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
@@ -400,14 +400,13 @@ int main(int argc, char *argv[])
   } else if ( farMemOption == 6 ) {
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
+	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
 	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
 	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
 	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
   }
-	
 
  	/* Regular with reuse */	
 	TYPE *soil_Reg_Reuse = (TYPE *)malloc (( numLat*numLon*numSoilLayers)*sizeof(TYPE));
@@ -485,6 +484,21 @@ int main(int argc, char *argv[])
   #endif
   get_mempolicy(&numa_node, NULL, 0, (void*)root_Reg_Rand_Idx, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("root_Reg_Rand_Idx %d \n", numa_node);
+  
+  *out_SurfMoist = 0; 
+	*out_PrecLeft = 0; 
+	*out_AtmosEffect = 0; 
+	*out_Moisture = 0; 
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_SurfMoist, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("MALLOC out_SurfMoist %d ", numa_node);
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_PrecLeft, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("out_PrecLeft %d ", numa_node);
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_AtmosEffect, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("out_AtmosEffect %d ", numa_node);
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_Moisture, MPOL_F_NODE | MPOL_F_ADDR);
+  printf("out_Moisture %d \n", numa_node);
+
+	printf("Running functions \n"); 
 
 	clock_gettime(CLOCK_REALTIME, &start); 
 	for ( int loopCnt=0; loopCnt <2; loopCnt++) {
@@ -501,14 +515,6 @@ int main(int argc, char *argv[])
 	for(i=0; i<( numLat*numLon); i++) {
 		*(out_Moisture+i) = *(out_SurfMoist+i ) + *(out_PrecLeft+i) -  *(out_AtmosEffect+i);
 	}
-  get_mempolicy(&numa_node, NULL, 0, (void*)out_SurfMoist, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("MALLOC out_SurfMoist %d ", numa_node);
-  get_mempolicy(&numa_node, NULL, 0, (void*)out_PrecLeft, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("out_PrecLeft %d ", numa_node);
-  get_mempolicy(&numa_node, NULL, 0, (void*)out_AtmosEffect, MPOL_F_NODE | MPOL_F_ADDR);
-	printf("out_AtmosEffect %d ", numa_node);
-  get_mempolicy(&numa_node, NULL, 0, (void*)out_Moisture, MPOL_F_NODE | MPOL_F_ADDR);
-  printf("out_Moisture %d \n", numa_node);
 
 	printf("output values om %f %f ", *(out_Moisture+1), *(out_Moisture+((numLat*numLon)-1)));
 	printf("sm %f %f \n", *(out_SurfMoist+1), *(out_SurfMoist+((numLat*numLon)-1)));
