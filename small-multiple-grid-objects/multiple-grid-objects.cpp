@@ -242,8 +242,8 @@ int main(int argc, char *argv[])
   // Grid size
   uint64_t numLat = 16*512;
  	uint64_t numLon = 16*512;
- 	//uint64_t numLat = 40;
- 	//uint64_t numLon = 20;
+ 	//uint64_t numLat = 400;
+ 	//uint64_t numLon = 400;
 	uint64_t numVegBands = 32;
 	uint64_t numRootLayers = 64;
 	uint64_t numSoilLayers = 8;
