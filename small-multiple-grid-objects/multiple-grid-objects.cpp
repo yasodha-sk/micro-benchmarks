@@ -17,10 +17,11 @@
 
 
 // Grid size
-//uint64_t numLat = 512;
-//uint64_t numLon = 512;
-uint64_t numLat = 400;
-uint64_t numLon = 400;
+uint64_t numLat = 8*512;
+uint64_t numLon = 8*512;
+//Grid size that Works for numalloc
+//uint64_t numLat = 400;
+//uint64_t numLon = 400;
 uint64_t numVegBands = 32;
 uint64_t numRootLayers = 64;
 uint64_t numSoilLayers = 8;
@@ -159,9 +160,9 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 		}
     outVeg=0;
 		for (vegIdx=*(veg_Reg_Rand_Idx+i); vegIdx < (*(veg_Reg_Rand_Idx+i+1)); vegIdx++) {
-			outVeg += *(veg_Reg_Rand+vegIdx) * 0.25;
+			outVeg += *(veg_Reg_Rand+vegIdx) * 0.33;
 		}
-		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) * 0.25;
+		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) / 0.25;
 		*(out_SurfMoist+i) = 	outSoil * outVeg* leftSM;
 	}
 }
@@ -354,10 +355,10 @@ int main(int argc, char *argv[])
 	uint64_t *prec_Rand_Idx; // = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 
   if ( farMemOption < 4 ) {
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t),local_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t),local_numa);
-	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t),local_numa);
-	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t),local_numa);
+	  veg_Reg_Rand_Idx = (uint64_t *) malloc (( numLat*numLon)*sizeof(uint64_t));
+	  root_Reg_Rand_Idx = (uint64_t *) malloc (( numLat*numLon)*sizeof(uint64_t));
+	  sm_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
+	  prec_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
   }
 
   if ( farMemOption == 0 ) {
@@ -502,7 +503,7 @@ int main(int argc, char *argv[])
 	printf("Running functions \n"); 
 
 	clock_gettime(CLOCK_REALTIME, &start); 
-	for ( int loopCnt=0; loopCnt <2; loopCnt++) {
+	for ( int loopCnt=0; loopCnt <10; loopCnt++) {
 	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Idx, soil_Reg_Reuse, 
             veg_Reg_Rand, veg_Reg_Rand_Idx, sm_Rand, sm_Rand_Idx);  
 	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Idx, soil_Reg_Reuse, 
