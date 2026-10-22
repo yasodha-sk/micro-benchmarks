@@ -41,10 +41,43 @@ def getLoadMiss(strIPFile, strPerfScriptFile):
   return sorted_dict
 
 # getLoadMiss(strIPFile, strPerfScriptFile)
-dictMiss = getLoadMiss('./grid-llc-script-LLC-miss-func-ip.txt', './grid-llc-script-LLC-miss-func.txt')
-dictLoads = getLoadMiss('./grid-llc-script-LLC-loads-func-ip.txt', './grid-llc-script-LLC-loads-func.txt')
-keysIPLoads = list(dictLoads)
-print ( "Inst \t loads \t misses \t percentage" )
-for ipValue in keysIPLoads :
-    if (ipValue in dictMiss):
-      print ( ipValue , dictLoads[ipValue], dictMiss[ipValue], round((float(dictMiss[ipValue])/float(dictLoads[ipValue])*100), 2) )
+def main():
+  print('in main')
+  if len(sys.argv) < 2:
+    print("Error: Please provide at least one argument.")
+    sys.exit(1)
+
+  objFileName = sys.argv[1]
+  print("Using object dump file ", objFileName)
+
+  dictMiss = getLoadMiss('./grid-llc-script-LLC-miss-func-ip.txt', './grid-llc-script-LLC-miss-func.txt')
+  dictLoad = getLoadMiss('./grid-llc-script-LLC-loads-func-ip.txt', './grid-llc-script-LLC-loads-func.txt')
+  keysIPLoad = list(dictLoad)
+  keysIPMiss  = list(dictMiss)
+  result = list(dict.fromkeys(keysIPLoad + keysIPMiss))
+
+  print ( "Inst \t loads \t misses \t percentage" )
+  for ipValue in result :
+    command = 'grep -B 5 ' +ipValue+ ': '+objFileName+' | grep \/'
+    #print (command)
+    strCodeLine =''
+    try:
+      strResult = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT,universal_newlines=True)
+    except subprocess.CalledProcessError as grepexc:
+      #print("error code ", command, grepexc.returncode, grepexc.output) 
+      strCodeLine = ''
+    if (strResult !=''):
+      strResult = str(strResult.strip())
+      if('\n' in strResult):
+        arrStrMap= strResult.split('\n')
+        strResult = arrStrMap[len(arrStrMap)-1]
+      strCodeLine = strResult.split('/').pop()
+    if (ipValue in dictMiss) and (ipValue in dictLoad):
+      print ( ipValue , dictLoad[ipValue], dictMiss[ipValue], round((float(dictMiss[ipValue])/float(dictLoad[ipValue])*100), 2) , strCodeLine)
+    elif (ipValue in dictMiss) :
+      print ( ipValue , 0, dictMiss[ipValue], "NA", strCodeLine) 
+    elif (ipValue in dictLoad) :
+      print ( ipValue , dictLoad[ipValue], 0, 0 , strCodeLine)
+
+if __name__ == "__main__":
+  main()
