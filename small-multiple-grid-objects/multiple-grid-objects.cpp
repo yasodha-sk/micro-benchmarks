@@ -27,6 +27,7 @@ uint64_t numRootLayers = 8;
 uint64_t numSoilLayers = 8;
 uint64_t numCanopyLayers = 4;
 uint64_t numAtmosValues= 8;
+int numLoops = 10;
 
 
 #define TYPE double
@@ -503,7 +504,7 @@ int main(int argc, char *argv[])
 	printf("Running functions \n"); 
 
 	clock_gettime(CLOCK_REALTIME, &start); 
-	for ( int loopCnt=0; loopCnt <20; loopCnt++) {
+	for ( int loopCnt=0; loopCnt <numLoops; loopCnt++) {
 	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Idx, soil_Reg_Reuse, 
             veg_Reg_Rand, veg_Reg_Rand_Idx, sm_Rand, sm_Rand_Idx);  
 	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Idx, soil_Reg_Reuse, 

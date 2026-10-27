@@ -52,6 +52,8 @@ def main():
 
   dictMiss = getLoadMiss('./grid-llc-script-LLC-miss-func-ip.txt', './grid-llc-script-LLC-miss-func.txt')
   dictLoad = getLoadMiss('./grid-llc-script-LLC-loads-func-ip.txt', './grid-llc-script-LLC-loads-func.txt')
+  dictAllLoads = getLoadMiss('./grid-llc-script-all-loads-func-ip.txt', './grid-llc-script-all-loads-func.txt')
+
   keysIPLoad = list(dictLoad)
   keysIPMiss  = list(dictMiss)
   result = list(dict.fromkeys(keysIPLoad + keysIPMiss))
@@ -72,12 +74,13 @@ def main():
         arrStrMap= strResult.split('\n')
         strResult = arrStrMap[len(arrStrMap)-1]
       strCodeLine = strResult.split('/').pop()
-    if (ipValue in dictMiss) and (ipValue in dictLoad):
-      print ( ipValue , dictLoad[ipValue], dictMiss[ipValue], round((float(dictMiss[ipValue])/float(dictLoad[ipValue])*100), 2) , strCodeLine)
-    elif (ipValue in dictMiss) :
-      print ( ipValue , 0, dictMiss[ipValue], "NA", strCodeLine) 
-    elif (ipValue in dictLoad) :
-      print ( ipValue , dictLoad[ipValue], 0, 0 , strCodeLine)
+    if (ipValue in dictMiss) and (ipValue in dictLoad) and (ipValue in dictAllLoads):
+      print ( ipValue , dictAllLoads[ipValue], dictLoad[ipValue], dictMiss[ipValue], round((float(dictMiss[ipValue])/float(dictAllLoads[ipValue])*100), 2) , strCodeLine)
+    elif (ipValue in dictMiss) and (ipValue in dictAllLoads) :
+      print ( ipValue , dictAllLoads[ipValue], 0, dictMiss[ipValue], "NA", strCodeLine) 
+    elif (ipValue in dictLoad) and (ipValue in dictAllLoads) :
+      print ( ipValue , dictAllLoads[ipValue], dictLoad[ipValue], 0, 0 , strCodeLine)
+      
 
 if __name__ == "__main__":
   main()
