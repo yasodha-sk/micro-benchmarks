@@ -156,14 +156,14 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.436) / cntSoil;	
 			}
 		}
     outVeg=0;
 		for (vegIdx=*(veg_Reg_Rand_Idx+i); vegIdx < (*(veg_Reg_Rand_Idx+i+1)); vegIdx++) {
 			outVeg += *(veg_Reg_Rand+vegIdx) * 0.33;
 		}
-		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) / 0.25;
+		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) / 0.69;
 		*(out_SurfMoist+i) = 	outSoil * outVeg* leftSM;
 	}
 }
@@ -186,14 +186,14 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.89) / cntSoil;	
 			}
 		}
     outRoot=0;
 		for (rootIdx=*(root_Reg_Rand_Idx+i); rootIdx < (*(root_Reg_Rand_Idx+i+1)); rootIdx++) {
-			outRoot += *(root_Reg_Rand+rootIdx) * 0.25;
+			outRoot += *(root_Reg_Rand+rootIdx) * 0.718;
 		}
-		leftPrec = *(prec_Rand+(*(prec_Rand_Idx+i))) * 0.25;
+		leftPrec = *(prec_Rand+(*(prec_Rand_Idx+i))) * 0.314;
 		*(out_PrecLeft+i) = 	outSoil * outRoot * leftPrec;
 	}
 }
