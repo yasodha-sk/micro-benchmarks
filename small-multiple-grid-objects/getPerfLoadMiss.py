@@ -75,11 +75,11 @@ def main():
         strResult = arrStrMap[len(arrStrMap)-1]
       strCodeLine = strResult.split('/').pop()
     if (ipValue in dictMiss) and (ipValue in dictLoad) and (ipValue in dictAllLoads):
-      print ( ipValue , dictAllLoads[ipValue], dictLoad[ipValue], dictMiss[ipValue], round((float(dictMiss[ipValue])/float(dictAllLoads[ipValue])*100), 2) , strCodeLine)
+      print ( ipValue ,'\t', f"{dictAllLoads[ipValue]:.2e}",'\t', f"{dictLoad[ipValue]:.2e}",'\t', f"{dictMiss[ipValue]:.2e}", '\t',round((float(dictMiss[ipValue])/float(dictAllLoads[ipValue])*100), 2) ,'\t', strCodeLine)
     elif (ipValue in dictMiss) and (ipValue in dictAllLoads) :
-      print ( ipValue , dictAllLoads[ipValue], 0, dictMiss[ipValue], "NA", strCodeLine) 
+      print ( ipValue , '\t',f"{dictAllLoads[ipValue]:.2e}",'\t', 0,'\t', f"{dictMiss[ipValue]:.2e}",'\t', "NA", '\t',strCodeLine) 
     elif (ipValue in dictLoad) and (ipValue in dictAllLoads) :
-      print ( ipValue , dictAllLoads[ipValue], dictLoad[ipValue], 0, 0 , strCodeLine)
+      print ( ipValue ,'\t', f"{dictAllLoads[ipValue]:.2e}",'\t', f"{dictLoad[ipValue]:.2e}",'\t', 0,'\t', 0 ,'\t', strCodeLine)
       
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Variables make the file easier to update
 CC = g++
-CFLAGS = -Wall -fopenmp
+CFLAGS = -g -Wall -fopenmp
 TARGET = exe-grid
 
 # The first target is the default one run by 'make'
