@@ -418,7 +418,7 @@ int main(int argc, char *argv[])
 	clock_gettime(CLOCK_REALTIME, &finish); 
 
 	//printf("sm %f %f \n", *(out_SurfMoist+1), *(out_SurfMoist+((numLat*numLon)-1)));
-	printf("prec %f %f ", *(out_PrecLeft+1), *(out_PrecLeft+((numLat*numLon)-1)));
+	printf("prec %f %f ", *(out_PrecLeft+1), *(out_PrecLeft+((numLat*numLon)-5)));
 	
   print_time(str_run_option, start, finish);
   return 0;
