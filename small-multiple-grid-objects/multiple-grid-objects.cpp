@@ -17,8 +17,8 @@
 
 
 // Grid size
-uint64_t numLat = 16*512;
-uint64_t numLon = 16*512;
+uint64_t numLat = 64*512;
+uint64_t numLon = 64*512;
 //Grid size that Works for numalloc
 //uint64_t numLat = 400;
 //uint64_t numLon = 400;
@@ -27,7 +27,7 @@ uint64_t numRootLayers = 8;
 uint64_t numSoilLayers = 8;
 uint64_t numCanopyLayers = 4;
 uint64_t numAtmosValues= 8;
-int numLoops = 10;
+int numLoops = 2;
 
 
 #define TYPE double
@@ -339,6 +339,8 @@ int main(int argc, char *argv[])
   // END Check numa_alloc functionality code 
   */
   
+    long long free_bytes = 0;
+    long long total_bytes =  0;
  	/* Regular Random - using random number of adjacent elements */	
 	TYPE *veg_Reg_Rand ;
 	TYPE *root_Reg_Rand ;
@@ -387,10 +389,16 @@ int main(int argc, char *argv[])
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
 	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
 	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
+    free_bytes = 0;
+    total_bytes = numa_node_size64(far_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", far_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
 	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), local_numa);
 	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), local_numa);
+    free_bytes = 0;
+    total_bytes = numa_node_size64(local_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", local_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
   } else if ( farMemOption == 5 ) {
 	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
 	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
@@ -411,9 +419,15 @@ int main(int argc, char *argv[])
 	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
   }
 
+    free_bytes = 0;
+    total_bytes = numa_node_size64(local_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", local_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
  	/* Regular with reuse */	
 	TYPE *soil_Reg_Reuse = (TYPE *) numa_alloc_onnode (( numLat*numLon*numSoilLayers)*sizeof(TYPE), local_numa);
 
+    free_bytes = 0;
+    total_bytes = numa_node_size64(far_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", far_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
  	/* Regular with NO reuse */	
 	//TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
 
@@ -502,6 +516,12 @@ int main(int argc, char *argv[])
   printf("out_Moisture %d \n", numa_node);
 
 	printf("Running functions \n"); 
+    free_bytes = 0;
+    total_bytes = numa_node_size64(local_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", local_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
+    free_bytes = 0;
+    total_bytes = numa_node_size64(far_numa, &free_bytes);
+    printf("Node %d: Total = %lld MB, Free = %lld MB\n", far_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
 
 	clock_gettime(CLOCK_REALTIME, &start); 
 	for ( int loopCnt=0; loopCnt <numLoops; loopCnt++) {
