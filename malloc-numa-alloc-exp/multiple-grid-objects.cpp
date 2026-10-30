@@ -18,8 +18,8 @@
 
 
 // Grid size
-uint64_t numLat = 8*512;
-uint64_t numLon = 8*512;
+uint64_t numLat = 32*512;
+uint64_t numLon = 32*512;
 //Grid size that Works for numalloc
 //uint64_t numLat = 400;
 //uint64_t numLon = 400;
@@ -373,70 +373,38 @@ int main(int argc, char *argv[])
 	uint64_t *sm_Rand_Idx; // = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 	uint64_t *prec_Rand_Idx; // = (uint64_t *)malloc ((numLat*numLon)*sizeof(uint64_t));
 
-  if ( farMemOption < 4 ) {
+  printf("before malloc veg_Reg_Rand_Idx root_Reg_Rand_Idx \n");
+  print_memory_usage();
 	  veg_Reg_Rand_Idx = (uint64_t *) malloc (( numLat*numLon)*sizeof(uint64_t));
 	  root_Reg_Rand_Idx = (uint64_t *) malloc (( numLat*numLon)*sizeof(uint64_t));
+
+  printf("before malloc sm_Rand_Idx prec_Rand_Idx  \n");
+  print_memory_usage();
 	  sm_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
 	  prec_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
-  }
 
-  if ( farMemOption == 0 ) {
+  printf("before numa veg_Reg_Rand root_Reg_Rand  \n");
+  print_memory_usage();
+  printf (" requested kB %zu\n", ((( numLat*numLon*numVegBands)*sizeof(TYPE)+ ( numLat*numLon*numRootLayers)*sizeof(TYPE))/1024));
+	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
+	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
+
+  printf("before numa sm_Rand prec_Rand \n");
+  print_memory_usage();
+  printf (" requested kB %zu\n", (2*( numLat*numLon)*sizeof(TYPE)/1024));
 	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
 	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
-  } else if ( farMemOption == 1 ) {
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-  } else if ( farMemOption == 2 ) {
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
-  } else if ( farMemOption == 3 ) {
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-  } else if ( farMemOption == 4 ) {
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), local_numa);
-	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), local_numa);
-	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), local_numa);
-  } else if ( farMemOption == 5 ) {
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), local_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), local_numa);
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
-	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
-  } else if ( farMemOption == 6 ) {
-	  veg_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), far_numa);
-	  root_Reg_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), far_numa);
-	  veg_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
-	  root_Reg_Rand_Idx = (uint64_t *)numa_alloc_onnode (( numLat*numLon)*sizeof(uint64_t), far_numa);
-	  sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
-	  sm_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
-	  prec_Rand_Idx = (uint64_t *)numa_alloc_onnode ((numLat*numLon)*sizeof(uint64_t), far_numa);
-  }
 
 
   printf("before malloc soil \n");
   print_memory_usage();
+  printf (" requested kB %zu\n", (( numLat*numLon*numSoilLayers)*sizeof(TYPE)/1024));
 	TYPE *soil_Reg_Reuse_1 = (TYPE *) malloc (( numLat*numLon*numSoilLayers)*sizeof(TYPE));
   *soil_Reg_Reuse_1 =0;
   printf("after malloc soil \n");
   print_memory_usage();
  	/* Regular with reuse */	
+  printf (" requested kB %zu\n", (( numLat*numLon*numSoilLayers)*sizeof(TYPE)/1024));
 	TYPE *soil_Reg_Reuse = (TYPE *) numa_alloc_onnode (( numLat*numLon*numSoilLayers)*sizeof(TYPE), local_numa);
   *soil_Reg_Reuse =0;
   printf("after numa_alloc soil \n");
