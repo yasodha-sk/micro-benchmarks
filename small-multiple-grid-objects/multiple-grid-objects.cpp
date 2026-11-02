@@ -153,8 +153,10 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
   #pragma omp parallel for private(i, j, k, cntSoil, outSoil, outVeg, vegIdx, leftSM)
   for(i=0; i<numElements; i++) {
     uint64_t thread_id = omp_get_thread_num();
+	#ifdef DEBUG
 	  //printf(" in funSMCalc thread_id %lu i %lu \n", thread_id, i );
     //sleep(2);
+  #endif
 		cntSoil = 6; //i % 8; 
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
@@ -163,10 +165,13 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 			}
 		}
     outVeg=0;
-	#ifdef DEBUG
-	  printf(" in funSMCalc thread_id %lu i %lu vegIdx %lu veg_Reg_Rand_Idx+i %lu veg_Reg_Rand_Idx+i+1 %lu \n", thread_id, i, vegIdx, *(veg_Reg_Rand_Idx+i), *(veg_Reg_Rand_Idx+i+1));
-    sleep(2);
-  #endif
+	  #ifdef DEBUG
+	    if (i <(numElements -1))
+        printf(" in funSMCalc thread_id %lu i %lu vegIdx %lu veg_Reg_Rand_Idx+i %lu veg_Reg_Rand_Idx+i+1 %lu \n", thread_id, i, vegIdx, *(veg_Reg_Rand_Idx+i), *(veg_Reg_Rand_Idx+i+1));
+      else
+        printf(" in funSMCalc thread_id %lu i %lu vegIdx %lu veg_Reg_Rand_Idx+i %lu \n", thread_id, i, vegIdx, *(veg_Reg_Rand_Idx+i)  );
+      sleep(2);
+    #endif
     if (i == (numElements -1))
       outVeg += *(veg_Reg_Rand+ (*(veg_Reg_Rand_Idx+i))) * 0.33;
     else {
