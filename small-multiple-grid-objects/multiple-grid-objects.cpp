@@ -17,17 +17,17 @@
 
 
 // Grid size
-uint64_t numLat = 64*512;
-uint64_t numLon = 64*512;
+//uint64_t numLat = 64*512;
+//uint64_t numLon = 64*512;
 //Grid size that Works for numalloc
-//uint64_t numLat = 400;
-//uint64_t numLon = 400;
-uint64_t numVegBands = 16;
+uint64_t numLat = 2;
+uint64_t numLon = 16;
+uint64_t numVegBands = 2;
 uint64_t numRootLayers = 8;
 uint64_t numSoilLayers = 8;
 uint64_t numCanopyLayers = 4;
 uint64_t numAtmosValues= 8;
-int numLoops = 2;
+int numLoops = 1;
 
 
 #define TYPE double
@@ -57,7 +57,7 @@ void init_indices_Reg_Rand ( uint64_t  *ar1, uint64_t arCnt, uint64_t numLayers)
 	  uint64_t idx_chunk_size = arCnt*numLayers / total_threads;
 	  uint64_t idx_start_idx = (thread_id) * idx_chunk_size;
     //printf("Hello thread %lu total %lu chunk size %lu start_idx_chunk %lu\n", thread_id,(arCnt*numLayers), 
-    //                            idx_chunk_size, idx_start_idx);
+     //                           idx_chunk_size, idx_start_idx);
 
     // Process only this thread's portion
 	  ar1[start_idx] = idx_start_idx;
@@ -152,17 +152,28 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 	TYPE leftSM =0;
   #pragma omp parallel for private(i, j, k, cntSoil, outSoil, outVeg, vegIdx, leftSM)
   for(i=0; i<numElements; i++) {
+    uint64_t thread_id = omp_get_thread_num();
+	  //printf(" in funSMCalc thread_id %lu i %lu \n", thread_id, i );
+    //sleep(2);
 		cntSoil = 6; //i % 8; 
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.436) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.436) / cntSoil;	
 			}
 		}
     outVeg=0;
-		for (vegIdx=*(veg_Reg_Rand_Idx+i); vegIdx < (*(veg_Reg_Rand_Idx+i+1)); vegIdx++) {
-			outVeg += *(veg_Reg_Rand+vegIdx) * 0.33;
-		}
+	#ifdef DEBUG
+	  printf(" in funSMCalc thread_id %lu i %lu vegIdx %lu veg_Reg_Rand_Idx+i %lu veg_Reg_Rand_Idx+i+1 %lu \n", thread_id, i, vegIdx, *(veg_Reg_Rand_Idx+i), *(veg_Reg_Rand_Idx+i+1));
+    sleep(2);
+  #endif
+    if (i == (numElements -1))
+      outVeg += *(veg_Reg_Rand_Idx+i) * 0.33;
+    else {
+		  for (vegIdx=*(veg_Reg_Rand_Idx+i); vegIdx < (*(veg_Reg_Rand_Idx+i+1)); vegIdx++) {
+			  outVeg += *(veg_Reg_Rand+vegIdx) * 0.33;
+		  }
+    }
 		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) / 0.69;
 		*(out_SurfMoist+i) = 	outSoil * outVeg* leftSM;
 	}
@@ -186,13 +197,17 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.89) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.89) / cntSoil;	
 			}
 		}
     outRoot=0;
-		for (rootIdx=*(root_Reg_Rand_Idx+i); rootIdx < (*(root_Reg_Rand_Idx+i+1)); rootIdx++) {
-			outRoot += *(root_Reg_Rand+rootIdx) * 0.718;
-		}
+    if (i == (numElements -1))
+      outRoot += *(root_Reg_Rand_Idx+i) * 0.718;
+    else {
+		  for (rootIdx=*(root_Reg_Rand_Idx+i); rootIdx < (*(root_Reg_Rand_Idx+i+1)); rootIdx++) {
+			  outRoot += *(root_Reg_Rand+rootIdx) * 0.718;
+		  }
+    }
 		leftPrec = *(prec_Rand+(*(prec_Rand_Idx+i))) * 0.314;
 		*(out_PrecLeft+i) = 	outSoil * outRoot * leftPrec;
 	}
