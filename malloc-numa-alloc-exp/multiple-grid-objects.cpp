@@ -18,8 +18,8 @@
 
 
 // Grid size
-uint64_t numLat = 32*512;
-uint64_t numLon = 32*512;
+uint64_t numLat = 64*512;
+uint64_t numLon = 64*512;
 //Grid size that Works for numalloc
 //uint64_t numLat = 400;
 //uint64_t numLon = 400;
@@ -28,7 +28,7 @@ uint64_t numRootLayers = 8;
 uint64_t numSoilLayers = 8;
 uint64_t numCanopyLayers = 4;
 uint64_t numAtmosValues= 8;
-int numLoops = 10;
+int numLoops = 2;
 
 
 void print_memory_usage() {
@@ -46,6 +46,28 @@ void print_memory_usage() {
         }
     }
     fclose(file);
+
+    long free_bytes = 0;
+    // numa_node_size64 returns total memory and populates free_bytes via pointer
+    int node=0;
+    long total_bytes = numa_node_size(0, &free_bytes);
+    if (total_bytes == -1) {
+        fprintf(stderr, "Failed to get size for NUMA node %d\n", node);
+        exit(1);
+    }
+    printf("NUMA Node %d: \t", node);
+    printf("  Total : %ld GB\t", total_bytes / (1024 * 1024*1024));
+    printf("  Free : %ld GB\n", free_bytes / (1024 * 1024*1024));
+    
+    node=1;
+    total_bytes = numa_node_size(1, &free_bytes);
+    if (total_bytes == -1) {
+        fprintf(stderr, "Failed to get size for NUMA node %d\n", node);
+        exit(1);
+    }
+    printf("NUMA Node %d: \t", node);
+    printf("  Total : %ld GB\t", total_bytes / (1024 * 1024*1024));
+    printf("  Free : %ld GB\n", free_bytes / (1024 * 1024*1024));
 }
 
 #define TYPE double
@@ -379,7 +401,7 @@ int main(int argc, char *argv[])
 	  root_Reg_Rand_Idx = (uint64_t *) malloc (( numLat*numLon)*sizeof(uint64_t));
 
   printf("before malloc sm_Rand_Idx prec_Rand_Idx  \n");
-  print_memory_usage();
+  //print_memory_usage();
 	  sm_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
 	  prec_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
 
@@ -447,8 +469,8 @@ int main(int argc, char *argv[])
   //get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
 	//printf("atmos_Reg %d ", numa_node);
 
-  usable_size = malloc_usable_size((void *)soil_Reg_Reuse);
-  printf("Usable bytes:    %zu\n", usable_size);
+  //usable_size = malloc_usable_size((void *)soil_Reg_Reuse);
+  //printf("Usable bytes:    %zu\n", usable_size);
 
 	
   #ifdef DEBUG 
