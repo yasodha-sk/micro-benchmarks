@@ -168,7 +168,7 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
     sleep(2);
   #endif
     if (i == (numElements -1))
-      outVeg += *(veg_Reg_Rand_Idx+i) * 0.33;
+      outVeg += *(veg_Reg_Rand+ (*(veg_Reg_Rand_Idx+i))) * 0.33;
     else {
 		  for (vegIdx=*(veg_Reg_Rand_Idx+i); vegIdx < (*(veg_Reg_Rand_Idx+i+1)); vegIdx++) {
 			  outVeg += *(veg_Reg_Rand+vegIdx) * 0.33;
@@ -202,7 +202,7 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 		}
     outRoot=0;
     if (i == (numElements -1))
-      outRoot += *(root_Reg_Rand_Idx+i) * 0.718;
+      outRoot += *(root_Reg_Rand +(*(root_Reg_Rand_Idx+i))) * 0.718;
     else {
 		  for (rootIdx=*(root_Reg_Rand_Idx+i); rootIdx < (*(root_Reg_Rand_Idx+i+1)); rootIdx++) {
 			  outRoot += *(root_Reg_Rand+rootIdx) * 0.718;
@@ -231,13 +231,17 @@ void __attribute__ ((noinline))	funEvapCalc(TYPE *out_EvapOut, uint64_t numEleme
 		outSoil =0;
 		for (k=0; k<cntSoil; k++) {
 			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5) / cntSoil;	
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.5) / cntSoil;	
 			}
 		}
     outCanopy=0;
-		for (canopyIdx=*(canopy_Reg_Rand_Idx+i); canopyIdx < (*(canopy_Reg_Rand_Idx+i+1)); canopyIdx++) {
-			outCanopy += *(canopy_Reg_Rand+canopyIdx) * 0.25;
-		}
+    if (i == (numElements -1))
+      outCanopy += *(canopy_Reg_Rand +(*(canopy_Reg_Rand_Idx+i))) * 0.25;
+    else {
+		  for (canopyIdx=*(canopy_Reg_Rand_Idx+i); canopyIdx < (*(canopy_Reg_Rand_Idx+i+1)); canopyIdx++) {
+			  outCanopy += *(canopy_Reg_Rand+canopyIdx) * 0.25;
+		  }
+    }
 		leftEvap = *(frac_Evap_Rand+(*(ar_Evap_Idx+i))) * 0.25;
 		*(out_EvapOut+i) = 	outSoil * outCanopy * leftEvap;
 	}
