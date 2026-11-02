@@ -266,7 +266,7 @@ void __attribute__ ((noinline))	funAtmosCalc(TYPE *out_AtmosEffect, uint64_t num
 		outSoil =0;
 		outAtmos=0;
 		for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+i+j)) * (0.5); 
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.5); 
 		}
 		for (k=0; k<numAtmosValues; k++) {
 				outAtmos += (*(atmos_Reg+i+k)) * (0.5); 
@@ -453,11 +453,11 @@ int main(int argc, char *argv[])
     total_bytes = numa_node_size64(far_numa, &free_bytes);
     printf("Node %d: Total = %lld MB, Free = %lld MB\n", far_numa, total_bytes / (1024 * 1024), free_bytes / (1024 * 1024));
  	/* Regular with NO reuse */	
-	//TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
+	TYPE *atmos_Reg = (TYPE *)malloc (( numLat*numLon*numAtmosValues)*sizeof(TYPE));
 
   TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *out_PrecLeft = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-	//TYPE *out_AtmosEffect = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+	TYPE *out_AtmosEffect = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *out_Moisture = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
   
   #ifdef DEBUG 
@@ -479,9 +479,9 @@ int main(int argc, char *argv[])
 	init_elem(soil_Reg_Reuse, numLat*numLon*numSoilLayers, 0.355);
   get_mempolicy(&numa_node, NULL, 0, (void*)soil_Reg_Reuse, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("MALLOC soil_Reg_Reuse %d ", numa_node);
-	//init_elem(atmos_Reg, numLat*numLon*numAtmosValues, 0.365);
-  //get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
-	//printf("atmos_Reg %d ", numa_node);
+	init_elem(atmos_Reg, numLat*numLon*numAtmosValues, 0.365);
+  get_mempolicy(&numa_node, NULL, 0, (void*)atmos_Reg, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("atmos_Reg %d ", numa_node);
 
 	
   #ifdef DEBUG 
@@ -528,14 +528,14 @@ int main(int argc, char *argv[])
   
   *out_SurfMoist = 0; 
 	*out_PrecLeft = 0; 
-	//*out_AtmosEffect = 0; 
+	*out_AtmosEffect = 0; 
 	*out_Moisture = 0; 
   get_mempolicy(&numa_node, NULL, 0, (void*)out_SurfMoist, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("MALLOC out_SurfMoist %d ", numa_node);
   get_mempolicy(&numa_node, NULL, 0, (void*)out_PrecLeft, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("out_PrecLeft %d ", numa_node);
-  //get_mempolicy(&numa_node, NULL, 0, (void*)out_AtmosEffect, MPOL_F_NODE | MPOL_F_ADDR);
-	//printf("out_AtmosEffect %d ", numa_node);
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_AtmosEffect, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("out_AtmosEffect %d ", numa_node);
   get_mempolicy(&numa_node, NULL, 0, (void*)out_Moisture, MPOL_F_NODE | MPOL_F_ADDR);
   printf("out_Moisture %d \n", numa_node);
 
@@ -553,7 +553,7 @@ int main(int argc, char *argv[])
             veg_Reg_Rand, veg_Reg_Rand_Idx, sm_Rand, sm_Rand_Idx);  
 	  funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Rand, root_Reg_Rand_Idx, soil_Reg_Reuse, 
               prec_Rand, prec_Rand_Idx);  
-	  //funAtmosCalc(out_AtmosEffect, (numLat*numLon),  soil_Reg_Reuse, atmos_Reg, numAtmosValues);  
+	  funAtmosCalc(out_AtmosEffect, (numLat*numLon),  soil_Reg_Reuse, atmos_Reg, numAtmosValues);  
 	}
 	clock_gettime(CLOCK_REALTIME, &finish); 
 
