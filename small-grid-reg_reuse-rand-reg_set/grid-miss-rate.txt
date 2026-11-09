@@ -4,13 +4,14 @@ Running match for  ./grid-llc-script-LLC-miss-func-ip.txt
 Running match for  ./grid-llc-script-LLC-loads-func-ip.txt
 Running match for  ./grid-llc-script-all-loads-func-ip.txt
 Inst 	 loads 	 misses 	 percentage
-401bb5 1324001986 429430285 428229974 32.34 multiple-grid-objects.cpp:177
-401da5 1320001980 428980096 429330051 32.52 multiple-grid-objects.cpp:215
-401c20 3998005997 7203024 8500595 0.21 multiple-grid-objects.cpp:162
-401e10 1146001719 2701134 2400168 0.21 multiple-grid-objects.cpp:201
-401d78 26300039450 900378 600042 0.0 multiple-grid-objects.cpp:211
-401ba7 450000675 600252 500035 0.11 multiple-grid-objects.cpp:177
-401d2d 444000666 550231 100007 0.02 multiple-grid-objects.cpp:205
-401d97 474000711 550231 1400098 0.3 multiple-grid-objects.cpp:215
-401b88 23096034644 150063 200014 0.0 multiple-grid-objects.cpp:173
-401b4d 390000585 100042 200014 0.05 multiple-grid-objects.cpp:167
+401bc5 1292001938 429630369 427229904 33.07 multiple-grid-objects.cpp:178
+401db5 1292001938 428930075 430430128 33.31 multiple-grid-objects.cpp:216
+401e20 3890005835 5202184 5000350 0.13 multiple-grid-objects.cpp:202
+401c30 3828005742 3701554 5600392 0.15 multiple-grid-objects.cpp:163
+401da7 390000585 1050441 300021 0.08 multiple-grid-objects.cpp:216
+401bb7 422000633 950399 1000070 0.24 multiple-grid-objects.cpp:178
+401b98 28464042696 850357 1000070 0.0 multiple-grid-objects.cpp:174
+401c19 4000006 850357 800056 20.0 multiple-grid-objects.cpp:162 (discriminator 1)
+401d88 32726049089 750315 200014 0.0 multiple-grid-objects.cpp:212
+401b5d 406000609 100042 100007 0.02 multiple-grid-objects.cpp:168
+401d3d 406000609 100042 100007 0.02 multiple-grid-objects.cpp:206

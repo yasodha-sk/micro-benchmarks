@@ -16,13 +16,14 @@
 #include <numaif.h>
 
 
-int numLoops = 5;
+int numLoops = 1;
 // Grid size
-uint64_t numLat = 32*512;
+uint64_t numLat = 64*512;
 uint64_t numLon = 32*512;
 uint64_t numVegBands = 16;
-uint64_t numRootLayers = 8;
-uint64_t numSoilLayers = 8;
+uint64_t numRootLayers = 16;
+uint64_t numSoilLayers = 10;
+
 uint64_t numCanopyLayers = 4;
 uint64_t numAtmosValues= 8;
 #define TYPE double
@@ -46,7 +47,7 @@ void print_memory_usage(int node) {
 
     long free_bytes = 0;
     // numa_node_size64 returns total memory and populates free_bytes via pointer
-    long total_bytes = numa_node_size(0, &free_bytes);
+    long total_bytes = numa_node_size(node, &free_bytes);
     if (total_bytes == -1) {
         fprintf(stderr, "Failed to get size for NUMA node %d\n", node);
         exit(1);
@@ -154,13 +155,6 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 	TYPE leftSM =0;
   #pragma omp parallel for private(i, j, k, cntSoil, outSoil, outVeg, vegIdx, leftSM)
   for(i=0; i<numElements; i++) {
-		cntSoil = 6; //i % 8; 
-		outSoil =0;
-		for (k=0; k<cntSoil; k++) {
-			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.437) / cntSoil;	
-			}
-		}
     outVeg=0;
  		if (i == (numElements -1))
       outVeg = *(veg_Reg_Set+ (*(veg_Reg_Set_Idx+i))) * 0.33;
@@ -169,6 +163,18 @@ void __attribute__ ((noinline)) funSMCalc(TYPE  *out_SurfMoist, uint64_t numElem
 				outVeg += *(veg_Reg_Set+vegIdx) * 0.33;
 			}
 		}
+
+    if (outVeg < 0.3567)
+				outVeg = *(veg_Reg_Set+(*(veg_Reg_Set_Idx+i))) / 0.33;
+		
+    cntSoil = 6; //i % 8; 
+		outSoil =0;
+		for (k=0; k<cntSoil; k++) {
+			for (j=0; j<numSoilLayers; j++) {
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.437) / cntSoil;	
+			}
+		}
+
 		leftSM = *(sm_Rand+(*(sm_Rand_Idx+i))) / 0.25;
 		*(out_SurfMoist+i) = 	outSoil * outVeg* leftSM;
 	}
@@ -188,13 +194,6 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 	TYPE leftPrec =0;
   #pragma omp parallel for private(i, j, k, cntSoil, outSoil, outRoot, rootIdx, leftPrec)
   for(i=0; i<numElements; i++) {
-		cntSoil = 7; //i % 8; 
-		outSoil =0;
-		for (k=0; k<cntSoil; k++) {
-			for (j=0; j<numSoilLayers; j++) {
-				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.567) / cntSoil;	
-			}
-		}
     outRoot=0;
 		if (i == (numElements -1))
       outRoot += *(root_Reg_Set +(*(root_Reg_Set_Idx+i))) * 0.718;
@@ -203,6 +202,17 @@ void __attribute__ ((noinline)) funPrecCalc(TYPE *out_PrecLeft, uint64_t numElem
 				outRoot += *(root_Reg_Set+rootIdx) * 0.2534;
 			}
 		}
+    if (outRoot <= 0.2534) 
+				outRoot = *(root_Reg_Set+(*(root_Reg_Set_Idx+i))) / 0.718; 
+
+		cntSoil = 7; //i % 8; 
+		outSoil =0;
+		for (k=0; k<cntSoil; k++) {
+			for (j=0; j<numSoilLayers; j++) {
+				outSoil += (*(soil_Reg_Reuse+(i*numSoilLayers)+j)) * (0.567) / cntSoil;	
+			}
+		}
+
 		leftPrec = *(prec_Rand+(*(prec_Rand_Idx+i))) * 0.7853;
 		*(out_PrecLeft+i) = 	outSoil * outRoot * leftPrec;
 	}
@@ -344,7 +354,7 @@ int main(int argc, char *argv[])
 	}
 	printf("NUMA preferred %d local %d far %d \n", numa_node, local_numa, far_numa);
 	print_memory_usage(local_numa);
-	//print_memory_usage(far_numa);
+	print_memory_usage(far_numa);
 
  	/* Regular Random - using random number of adjacent elements */	
 	TYPE *veg_Reg_Set ;
@@ -371,24 +381,28 @@ int main(int argc, char *argv[])
 	prec_Rand_Idx = (uint64_t *) malloc ((numLat*numLon)*sizeof(uint64_t));
   check_allocation(prec_Rand_Idx, local_numa);
 	print_memory_usage(local_numa);
-	sm_Rand = (TYPE *) malloc (( numLat*numLon)*sizeof(TYPE));
-  check_allocation(sm_Rand, local_numa);
-	prec_Rand = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
-  check_allocation(prec_Rand, local_numa);
-	veg_Reg_Set = (TYPE *) malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
+
+	sm_Rand = (TYPE *) numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+	prec_Rand = (TYPE *)numa_alloc_onnode (( numLat*numLon)*sizeof(TYPE), far_numa);
+  check_allocation(prec_Rand, far_numa);
+
+	//veg_Reg_Set = (TYPE *) malloc (( numLat*numLon*numVegBands)*sizeof(TYPE));
+	veg_Reg_Set = (TYPE *) numa_alloc_onnode (( numLat*numLon*numVegBands)*sizeof(TYPE), local_numa);
   check_allocation(veg_Reg_Set, local_numa);
-	root_Reg_Set = (TYPE *) malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
+
+	//root_Reg_Set = (TYPE *) malloc (( numLat*numLon*numRootLayers)*sizeof(TYPE));
+  root_Reg_Set = (TYPE *) numa_alloc_onnode (( numLat*numLon*numRootLayers)*sizeof(TYPE), local_numa);
   check_allocation(root_Reg_Set, local_numa);
 
-
  	/* Regular with reuse */	
-	TYPE *soil_Reg_Reuse = (TYPE *) malloc (( numLat*numLon*numSoilLayers)*sizeof(TYPE));
+	TYPE *soil_Reg_Reuse = (TYPE *) numa_alloc_onnode (( numLat*numLon*numSoilLayers)*sizeof(TYPE), local_numa);
   check_allocation(soil_Reg_Reuse, local_numa);
 
-  //TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
+  TYPE *out_SurfMoist = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
 	TYPE *out_PrecLeft = (TYPE *)malloc (( numLat*numLon)*sizeof(TYPE));
   check_allocation(out_PrecLeft, local_numa);
 	print_memory_usage(local_numa);
+	print_memory_usage(far_numa);
   
   #ifdef DEBUG 
     printf("start init_elem \n");
@@ -456,33 +470,34 @@ int main(int argc, char *argv[])
   get_mempolicy(&numa_node, NULL, 0, (void*)root_Reg_Set_Idx, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("root_Reg_Set_Idx %d \n", numa_node);
   
-  //*out_SurfMoist = 0; 
+  *out_SurfMoist = 0; 
 	*out_PrecLeft = 0; 
-  //get_mempolicy(&numa_node, NULL, 0, (void*)out_SurfMoist, MPOL_F_NODE | MPOL_F_ADDR);
-	//printf("MALLOC out_SurfMoist %d ", numa_node);
+  get_mempolicy(&numa_node, NULL, 0, (void*)out_SurfMoist, MPOL_F_NODE | MPOL_F_ADDR);
+	printf("MALLOC out_SurfMoist %d ", numa_node);
   get_mempolicy(&numa_node, NULL, 0, (void*)out_PrecLeft, MPOL_F_NODE | MPOL_F_ADDR);
 	printf("out_PrecLeft %d \n", numa_node);
 	print_memory_usage(local_numa);
+	print_memory_usage(far_numa);
 
 	printf("Running function loop for %d iterations \n", numLoops); 
 
 	clock_gettime(CLOCK_REALTIME, &start); 
 	for ( int loopCnt=0; loopCnt <numLoops; loopCnt++) {
-	  //funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Set, root_Reg_Set_Idx, soil_Reg_Reuse, 
-    //       veg_Reg_Set, veg_Reg_Set_Idx, sm_Rand, sm_Rand_Idx);  
+	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Set, root_Reg_Set_Idx, soil_Reg_Reuse, 
+           veg_Reg_Set, veg_Reg_Set_Idx, sm_Rand, sm_Rand_Idx);  
 		funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Set, root_Reg_Set_Idx, soil_Reg_Reuse,
                prec_Rand, prec_Rand_Idx);
 	}
 	clock_gettime(CLOCK_REALTIME, &finish); 
 
-	//printf("sm %f %f \n", *(out_SurfMoist+1), *(out_SurfMoist+((numLat*numLon)-1)));
+	printf("sm %f %f \n", *(out_SurfMoist+1), *(out_SurfMoist+((numLat*numLon)-1)));
 	printf("prec %f %f ", *(out_PrecLeft+1), *(out_PrecLeft+((numLat*numLon)-5)));
 	
   print_time(str_run_option, start, finish);
   free(out_PrecLeft);
-	free(root_Reg_Set);
+	//free(root_Reg_Set);
 	free(root_Reg_Set_Idx);
-	free(soil_Reg_Reuse);
+	//free(soil_Reg_Reuse);
 	free(prec_Rand);
 	free(prec_Rand_Idx);
   return 0;
