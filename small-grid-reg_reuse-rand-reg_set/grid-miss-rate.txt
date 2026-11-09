@@ -4,46 +4,48 @@ Running match for  ./grid-llc-script-LLC-miss-func-ip.txt
 Running match for  ./grid-llc-script-LLC-loads-func-ip.txt
 Running match for  ./grid-llc-script-all-loads-func-ip.txt
 Inst 	 loads 	 misses 	 percentage
-401d40 2126003189 357644958 357538100 16.82 multiple-grid-objects.cpp:195
-401b60 2098003147 356002588 355086966 16.92 multiple-grid-objects.cpp:161
-401d48 718001077 158914919 158635546 22.09 multiple-grid-objects.cpp:195
-401b68 800001200 157373213 158174214 19.77 multiple-grid-objects.cpp:161
-401b58 2242003363 13266553 13096077 0.58 multiple-grid-objects.cpp:161
-401d38 2136003204 13135984 12784329 0.6 multiple-grid-objects.cpp:195
-401c08 3290004935 8541643 8456181 0.26 multiple-grid-objects.cpp:168 (discriminator 1)
-401d83 5526008289 5568292 4989100 0.09 multiple-grid-objects.cpp:206
-401ba6 8000012 4719998 4806392 60.08 multiple-grid-objects.cpp:173
-401b9e 6906010359 4485040 3880540 0.06 multiple-grid-objects.cpp:172
-401d8b 2000003 4473044 4699258 234.96 multiple-grid-objects.cpp:207
-401bfc 296000444 3438491 3622701 1.22 multiple-grid-objects.cpp:168 (discriminator 1)
-401df0 1536002304 2470909 2494374 0.16 multiple-grid-objects.cpp:202 (discriminator 1)
-401b92 44000066 1522197 1374917 3.12 multiple-grid-objects.cpp:173
-401d6f 4000006 1466466 1471382 36.78 multiple-grid-objects.cpp:206
-401d77 58000087 1113018 1109321 1.91 multiple-grid-objects.cpp:207
-401c0d 38000057 1010245 953198 2.51 multiple-grid-objects.cpp:168 (discriminator 1)
-401de4 76000114 880038 819322 1.08 multiple-grid-objects.cpp:202 (discriminator 1)
-401d4c 18958028437 637329 620264 0.0 multiple-grid-objects.cpp:194 (discriminator 1)
-401ba2 4000006 568166 483075 12.08 multiple-grid-objects.cpp:173
-401d87 4000006 559868 522529 13.06 multiple-grid-objects.cpp:207
-401c04 428000642 541658 456545 0.11 multiple-grid-objects.cpp:169
-401b6c 14420021630 440845 375379 0.0 multiple-grid-objects.cpp:160 (discriminator 1)
-401b8a 34000051 311539 359830 1.06 multiple-grid-objects.cpp:172
-401de0 6000009 297869 331025 5.52 multiple-grid-objects.cpp:203
-401dc4 24000036 253181 188292 0.78 multiple-grid-objects.cpp:202 (discriminator 1)
-401bbe 2000003 186570 182129 9.11 multiple-grid-objects.cpp:160 (discriminator 1)
-401d73 26000039 158650 137059 0.53 multiple-grid-objects.cpp:207
-401bdf 6000009 131033 138326 2.31 multiple-grid-objects.cpp:168 (discriminator 1)
-401da3 4000006 127812 185013 4.63 multiple-grid-objects.cpp:194 (discriminator 1)
-401dec 286000429 121037 160974 0.06 multiple-grid-objects.cpp:203
-401d44 3248004872 108374 107691 0.0 multiple-grid-objects.cpp:195
-401bf8 176000264 93243 107208 0.06 multiple-grid-objects.cpp:169
-401d3c 714001071 69280 58597 0.01 multiple-grid-objects.cpp:194 (discriminator 1)
-401b64 3290004935 64211 53854 0.0 multiple-grid-objects.cpp:161
-401b71 6000009 53162 4206 0.07 multiple-grid-objects.cpp:159 (discriminator 1)
-401d51 2000003 51704 8048 0.4 multiple-grid-objects.cpp:193 (discriminator 1)
-401b5c 752001128 40706 29929 0.0 multiple-grid-objects.cpp:160 (discriminator 1)
-401b8e 44000066 37273 34913 0.08 multiple-grid-objects.cpp:173
-401de8 504000756 15525 4235 0.0 multiple-grid-objects.cpp:203
-401dd3 12000018 10678 13271 0.11 multiple-grid-objects.cpp:198
-401c00 538000807 10669 0 0 multiple-grid-objects.cpp:169
-401bee 16000024 2058 8555 0.05 multiple-grid-objects.cpp:164
+401c28 4000006 184606514 183309171 4582.72 multiple-grid-objects.cpp:162
+401c38 2968004452 113909609 112758929 3.8 multiple-grid-objects.cpp:161 (discriminator 1)
+401e20 1390002085 104780961 103730774 7.46 multiple-grid-objects.cpp:200 (discriminator 1)
+401c34 26000039 80349862 81475179 313.37 multiple-grid-objects.cpp:162
+401e1c 6000009 69346768 69596804 1159.94 multiple-grid-objects.cpp:201
+401d78 2338003507 37552933 37684805 1.61 multiple-grid-objects.cpp:211
+401d7c 1776002664 33554725 33272612 1.87 multiple-grid-objects.cpp:210 (discriminator 1)
+401d8c 20624030936 29331013 30007519 0.15 multiple-grid-objects.cpp:210 (discriminator 1)
+401ba0 1744002616 16867205 16589404 0.95 multiple-grid-objects.cpp:173
+401b73 80000120 16647306 16824558 21.03 multiple-grid-objects.cpp:166
+401b90 256000384 16617999 16698995 6.52 multiple-grid-objects.cpp:166
+401ba4 3516005274 16578927 16989608 0.48 multiple-grid-objects.cpp:173
+401d57 2000003 13421522 13232591 661.63 multiple-grid-objects.cpp:194
+401b6f 2000003 7240500 7616571 380.83 multiple-grid-objects.cpp:166
+401b6b 12000018 6146479 6013981 50.12 multiple-grid-objects.cpp:166
+401db3 2000003 4372403 4276589 213.83 multiple-grid-objects.cpp:216
+401bcc 2620003930 4032558 3298365 0.13 multiple-grid-objects.cpp:177
+401dab 2710004065 3644788 3022830 0.11 multiple-grid-objects.cpp:215
+401c2c 108000162 1401507 1213995 1.12 multiple-grid-objects.cpp:161 (discriminator 1)
+401e14 32000048 911916 894269 2.79 multiple-grid-objects.cpp:200 (discriminator 1)
+401bac 18410027615 722710 697778 0.0 multiple-grid-objects.cpp:172 (discriminator 1)
+401d88 1604002406 613790 619407 0.04 multiple-grid-objects.cpp:211
+401ba8 1622002433 462007 508134 0.03 multiple-grid-objects.cpp:173
+401d80 1772002658 434932 446473 0.03 multiple-grid-objects.cpp:211
+401b9c 1722002583 258190 304565 0.02 multiple-grid-objects.cpp:172 (discriminator 1)
+401d4c 2000003 237138 236101 11.81 multiple-grid-objects.cpp:204
+401d31 2000003 184029 198347 9.92 multiple-grid-objects.cpp:197
+401c30 296000444 140676 159215 0.05 multiple-grid-objects.cpp:162
+401c11 2000003 124620 91065 4.55 multiple-grid-objects.cpp:161 (discriminator 1)
+401d84 3712005568 97077 128188 0.0 multiple-grid-objects.cpp:211
+401e18 68000102 66747 77658 0.11 multiple-grid-objects.cpp:201
+401d51 86000129 66273 71559 0.08 multiple-grid-objects.cpp:204
+401b98 1944002916 65876 52655 0.0 multiple-grid-objects.cpp:173
+401bbb 4000006 56936 0 0 multiple-grid-objects.cpp:178
+401b62 80000120 51073 43402 0.05 multiple-grid-objects.cpp:166
+401b77 48000072 37493 26338 0.05 multiple-grid-objects.cpp:167
+401d70 128000192 36718 21101 0.02 multiple-grid-objects.cpp:167
+401b66 42000063 19725 8287 0.02 multiple-grid-objects.cpp:166
+401d9b 6000009 17505 0 0 multiple-grid-objects.cpp:216
+401b93 168000252 13266 15285 0.01 multiple-grid-objects.cpp:216
+401b7d 34000051 10935 2196 0.01 multiple-grid-objects.cpp:172 (discriminator 1)
+401d9f 560000840 8995 6480 0.0 multiple-grid-objects.cpp:216
+401bbf 586000879 6735 2197 0.0 multiple-grid-objects.cpp:178
+401bb1 282000423 2206 2264 0.0 multiple-grid-objects.cpp:171 (discriminator 1)
+401d91 292000438 0 4237 NA multiple-grid-objects.cpp:209 (discriminator 1)
