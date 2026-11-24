@@ -19,6 +19,7 @@ mv $cwd/$dir_name/exe-grid-sel-memgaze.binanlys $cwd/$dir_name/exe-grid-sel-memg
 mv $cwd/$dir_name/exe-grid-sel-memgaze.binanlys_Fixed $cwd/$dir_name/exe-grid-sel-memgaze.binanlys
 
 #
+# grep "^00.*<fun" obj_exe-grid | cut -d " " -f 1,2
 #0000000000002dd0 <funSMCalc(double*,
 #0000000000003060 <funPrecCalc(double*,
 #0000000000003300 <funEvapCalc(double*,
