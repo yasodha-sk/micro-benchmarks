@@ -16,9 +16,9 @@
 #include <numaif.h>
 
 
-int numLoops = 1;
+int numLoops = 2;
 // Grid size
-uint64_t numLat = 64*512;
+uint64_t numLat = 16*512;
 uint64_t numLon = 32*512;
 uint64_t numVegBands = 16;
 uint64_t numRootLayers = 16;
@@ -485,6 +485,8 @@ int main(int argc, char *argv[])
 	for ( int loopCnt=0; loopCnt <numLoops; loopCnt++) {
 	  funSMCalc(out_SurfMoist, (numLat*numLon), root_Reg_Set, root_Reg_Set_Idx, soil_Reg_Reuse, 
            veg_Reg_Set, veg_Reg_Set_Idx, sm_Rand, sm_Rand_Idx);  
+	}
+	for ( int loopCnt=0; loopCnt <numLoops; loopCnt++) {
 		funPrecCalc(out_PrecLeft, (numLat*numLon), root_Reg_Set, root_Reg_Set_Idx, soil_Reg_Reuse,
                prec_Rand, prec_Rand_Idx);
 	}
@@ -494,11 +496,11 @@ int main(int argc, char *argv[])
 	printf("prec %f %f ", *(out_PrecLeft+1), *(out_PrecLeft+((numLat*numLon)-5)));
 	
   print_time(str_run_option, start, finish);
-  free(out_PrecLeft);
+  //free(out_PrecLeft);
 	//free(root_Reg_Set);
-	free(root_Reg_Set_Idx);
+	//free(root_Reg_Set_Idx);
 	//free(soil_Reg_Reuse);
-	free(prec_Rand);
-	free(prec_Rand_Idx);
+	//free(prec_Rand);
+	//free(prec_Rand_Idx);
   return 0;
 }
